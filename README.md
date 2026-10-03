@@ -111,6 +111,17 @@ xcodebuild test -scheme Duophonic -destination 'platform=macOS'
 
 Core Audio access is behind the `AudioHardware` protocol. `CoreAudioHardware` talks to the system, while the tests and SwiftUI previews use `InMemoryAudioHardware`.
 
+### Testing routing without a second device
+
+[BlackHole](https://github.com/ExistentialAudio/BlackHole) provides virtual outputs that loop their audio back to an input, so you can stand in for real speakers and check what reaches them:
+
+```bash
+brew install sox blackhole-2ch blackhole-16ch
+```
+
+- `AudioRoutingTests` plays a test tone into a private aggregate of both BlackHole devices and asserts it arrives at each. It also checks that the tone keeps playing while the aggregate is changed in place. The suite is skipped when BlackHole isn't installed. The first run asks for microphone access (Debug builds only), which macOS requires before it records anything other than silence.
+- `scripts/verify-routing.sh` checks the running app: pick both BlackHole devices in Duophonic, enable it, then run the script. Your terminal needs microphone access.
+
 ### Releasing
 
 Push a tag like `v1.2.0` to build the app and publish a GitHub release; the tag sets the version. To ship a signed and notarized app that opens without Gatekeeper warnings, add these repository secrets:
