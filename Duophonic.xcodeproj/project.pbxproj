@@ -6,7 +6,18 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		8D8D43072EDD7CB4007391DD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8D8D42C02EDD7CB4007391DD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8D8D42C72EDD7CB4007391DD;
+			remoteInfo = Duophonic;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		8D8D43012EDD7CB4007391DD /* DuophonicTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DuophonicTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D8D42C82EDD7CB4007391DD /* Duophonic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Duophonic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -16,10 +27,22 @@
 			path = Duophonic;
 			sourceTree = "<group>";
 		};
+		8D8D43022EDD7CB4007391DD /* DuophonicTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = DuophonicTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		8D8D42C52EDD7CB4007391DD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8D8D43032EDD7CB4007391DD /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				8D8D42CA2EDD7CB4007391DD /* Duophonic */,
+				8D8D43022EDD7CB4007391DD /* DuophonicTests */,
 				8D8D42C92EDD7CB4007391DD /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				8D8D42C82EDD7CB4007391DD /* Duophonic.app */,
+				8D8D43012EDD7CB4007391DD /* DuophonicTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,6 +95,29 @@
 			productReference = 8D8D42C82EDD7CB4007391DD /* Duophonic.app */;
 			productType = "com.apple.product-type.application";
 		};
+		8D8D43062EDD7CB4007391DD /* DuophonicTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8D8D430B2EDD7CB4007391DD /* Build configuration list for PBXNativeTarget "DuophonicTests" */;
+			buildPhases = (
+				8D8D43042EDD7CB4007391DD /* Sources */,
+				8D8D43032EDD7CB4007391DD /* Frameworks */,
+				8D8D43052EDD7CB4007391DD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8D8D43082EDD7CB4007391DD /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				8D8D43022EDD7CB4007391DD /* DuophonicTests */,
+			);
+			name = DuophonicTests;
+			packageProductDependencies = (
+			);
+			productName = DuophonicTests;
+			productReference = 8D8D43012EDD7CB4007391DD /* DuophonicTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -82,6 +130,10 @@
 				TargetAttributes = {
 					8D8D42C72EDD7CB4007391DD = {
 						CreatedOnToolsVersion = 26.1.1;
+					};
+					8D8D43062EDD7CB4007391DD = {
+						CreatedOnToolsVersion = 26.1.1;
+						TestTargetID = 8D8D42C72EDD7CB4007391DD;
 					};
 				};
 			};
@@ -100,12 +152,20 @@
 			projectRoot = "";
 			targets = (
 				8D8D42C72EDD7CB4007391DD /* Duophonic */,
+				8D8D43062EDD7CB4007391DD /* DuophonicTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		8D8D42C62EDD7CB4007391DD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8D8D43052EDD7CB4007391DD /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +182,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8D8D43042EDD7CB4007391DD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		8D8D43082EDD7CB4007391DD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8D8D42C72EDD7CB4007391DD /* Duophonic */;
+			targetProxy = 8D8D43072EDD7CB4007391DD /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		8D8D42D12EDD7CB8007391DD /* Debug */ = {
@@ -258,12 +333,15 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Duophonic;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Juri Beforth. MIT License.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Debug builds only: the routing tests record BlackHole virtual devices to verify audio reaches both outputs.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -293,12 +371,13 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Duophonic;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Juri Beforth. MIT License.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -314,6 +393,46 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		8D8D43092EDD7CB4007391DD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.juri1212.DuophonicTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Duophonic.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Duophonic";
+			};
+			name = Debug;
+		};
+		8D8D430A2EDD7CB4007391DD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.juri1212.DuophonicTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Duophonic.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Duophonic";
 			};
 			name = Release;
 		};
@@ -334,6 +453,15 @@
 			buildConfigurations = (
 				8D8D42D42EDD7CB8007391DD /* Debug */,
 				8D8D42D52EDD7CB8007391DD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8D8D430B2EDD7CB4007391DD /* Build configuration list for PBXNativeTarget "DuophonicTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8D8D43092EDD7CB4007391DD /* Debug */,
+				8D8D430A2EDD7CB4007391DD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

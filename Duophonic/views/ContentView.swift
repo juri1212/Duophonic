@@ -71,8 +71,11 @@ struct ContentView: View {
     }
 }
 
-#Preview {
-    ContentView()
-        .frame(width: 260)
-        .environmentObject(AppState())
-}
+#if DEBUG
+    #Preview {
+        ContentView()
+            .frame(width: 260)
+            .environmentObject(AudioAggregateManager.preview)
+            .environmentObject(LaunchAtLogin())
+    }
+#endif

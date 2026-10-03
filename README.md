@@ -22,16 +22,20 @@ rm -f Duophonic.zip && \
 mv "Duophonic.app" /Applications/ && \
 open /Applications/Duophonic.app
 ```
-> Note: You may be prompted to allow the app in System Settings → Privacy & Security.
+> Note: Unless the release is notarized, macOS blocks the first launch. See [Troubleshooting](#troubleshooting).
+
+Requires macOS 26.1 or later.
 
 ## Features
 
 - Simple UI to create a system-wide aggregate output that plays to two devices at once.
 - Choose a primary and secondary output device from the detected hardware list.
 - Per-device volume sliders (for devices that support software volume control).
-- Automatic drift compensation for the secondary device when the aggregate is created.
-- Safe lifecycle handling: the app restores the previous default output and destroys the aggregate when disabled or on quit.
-- Quick refresh of device list and auto-selection of the first two outputs.
+- Drift compensation on the secondary device keeps both outputs in sync during long sessions.
+- Switch either output while playing — the multi-output device is updated in place, so playback keeps running. Picking the other slot's device swaps them.
+- Follows your hardware: devices that connect or disconnect show up immediately, and a reconnected device rejoins playback automatically.
+- Remembers your two outputs between launches and preselects the current output plus a pair of headphones the first time.
+- Safe lifecycle handling: the app restores the previous outputs (for audio and for alerts) and removes the multi-output device when disabled, on quit, or when you pick another output in Control Center. If the app was killed, it cleans up on the next launch.
 - Ideal for **listening with two pairs of AirPods** (or any two Bluetooth headsets). Create an aggregate output, set each AirPod pair as one of the outputs, and enjoy synced playback between both sets.
 
 
@@ -42,18 +46,20 @@ open /Applications/Duophonic.app
 - Pick a `Primary` device and a `Secondary` device.
 - Use the sliders to set per-device volumes (sliders are disabled if the device does not expose a software volume control).
 - Flip the toggle in the top-right to enable multi-output.
-- To stop multi-output, flip the toggle off or quit the app — the previous default output will be restored.
+- To stop multi-output, flip the toggle off, quit the app, or select another output in Control Center — the previous output will be restored.
 
 ## Notes & Limitations
 
-- The aggregate device is created as a temporary, app-managed device and is removed when disabled. If the app is terminated unexpectedly the aggregate may remain; you can remove it from System Settings → Sound if needed.
+- The aggregate device is created as a temporary, app-managed device and is removed when disabled. If the app is terminated unexpectedly the aggregate remains until Duophonic is opened again, which either resumes or removes it. You can also remove it in the Audio MIDI Setup app.
+- macOS can't change the volume of a multi-output device, so the volume keys and the Control Center slider don't work while it's enabled. Use the per-device sliders in Duophonic instead.
 - Some devices (notably certain Bluetooth or USB audio interfaces) may not expose software volume controls; in that case the slider will be disabled and you'll need to adjust hardware volume on the device itself.
+- When a Bluetooth headset's microphone is in use (e.g. during a call), macOS switches it to a lower-quality mode for both playback and recording.
 
 ## How It Works
 
-The app uses Core Audio APIs to create a temporary aggregate device that contains two selected output devices. The selected primary device is treated as the master (no drift compensation) while the secondary device is added with drift compensation enabled so both outputs stay in sync.
+The app uses Core Audio APIs to create a stacked aggregate device that contains the two selected output devices, so both play the same channels. The primary device is the clock source (no drift compensation) while the secondary device is resampled with drift compensation so both outputs stay in sync.
 
-When enabled the app will attempt to set the new aggregate as both the default output and the default system output. When you disable the feature (or quit the app) it will attempt to restore the previous default output and remove the aggregate device it created.
+When enabled the app sets the new aggregate as both the default output and the default system output (alerts), after remembering the previous ones. Changing an output while enabled replaces the aggregate's sub-devices in place. When you disable the feature (or quit the app) it restores the previous outputs and removes the aggregate device it created.
 
 ## Step by step Installation
 
@@ -72,13 +78,12 @@ mv "Duophonic.app" /Applications/
 open /Applications/Duophonic.app
 ```
 
-> Note: You may be prompted to allow the app in System Settings → Privacy & Security. Approve any prompts and, if necessary, grant the app permissions to access audio devices.
-
 ## Troubleshooting
 
-- If macOS prevents opening the app because it's from an unidentified developer, Control-click the app in Finder and choose `Open`, then confirm.
-- If the app needs to access audio devices or system settings, go to `System Settings` → `Privacy & Security` and allow the requested permissions.
+- If macOS says the app can't be opened or verified, open `System Settings` → `Privacy & Security`, scroll to the message about Duophonic and click `Open Anyway`. Alternatively, remove the quarantine flag once: `xattr -dr com.apple.quarantine /Applications/Duophonic.app`.
+- If "Start on login" stays pending, allow Duophonic in `System Settings` → `General` → `Login Items`.
 - If the downloaded file is different than the example above, replace the file name in the `curl` command with the correct file name shown on the release page.
+- Each release ships a `Duophonic.zip.sha256` file to verify the download with `shasum -a 256 -c Duophonic.zip.sha256`.
 
 ## Uninstall
 
@@ -86,7 +91,7 @@ To remove the app and its preferences:
 
 ```bash
 rm -rf /Applications/Duophonic.app
-rm -rf ~/Library/Preferences/juri1212.Duophonic.plist
+rm -rf ~/Library/Containers/com.juri1212.Duophonic
 ```
 
 ## Development
@@ -97,3 +102,36 @@ Run these after cloning to enable repository hooks and install the formatter:
 git config core.hooksPath .githooks
 brew install swift-format
 ```
+
+Run the unit tests with `⌘U` in Xcode or:
+
+```bash
+xcodebuild test -scheme Duophonic -destination 'platform=macOS'
+```
+
+Core Audio access is behind the `AudioHardware` protocol. `CoreAudioHardware` talks to the system, while the tests and SwiftUI previews use `InMemoryAudioHardware`.
+
+### Testing routing without a second device
+
+[BlackHole](https://github.com/ExistentialAudio/BlackHole) provides virtual outputs that loop their audio back to an input, so you can stand in for real speakers and check what reaches them:
+
+```bash
+brew install sox blackhole-2ch blackhole-16ch
+```
+
+- `AudioRoutingTests` plays a test tone into a private aggregate of both BlackHole devices and asserts it arrives at each. It also checks that the tone keeps playing while the aggregate is changed in place. The suite is skipped when BlackHole isn't installed. The first run asks for microphone access (Debug builds only), which macOS requires before it records anything other than silence.
+- `scripts/verify-routing.sh` checks the running app: pick both BlackHole devices in Duophonic, enable it, then run the script. Your terminal needs microphone access.
+
+### Releasing
+
+Push a tag like `v1.2.0` to build the app and publish a GitHub release; the tag sets the version. To ship a signed and notarized app that opens without Gatekeeper warnings, add these repository secrets:
+
+| Secret | Value |
+|---|---|
+| `MACOS_CERTIFICATE_P12` | Base64 of the exported *Developer ID Application* certificate (`base64 -i cert.p12`) |
+| `MACOS_CERTIFICATE_PASSWORD` | Password of that `.p12` |
+| `APPLE_TEAM_ID` | Your Apple Developer team ID |
+| `NOTARY_APPLE_ID` | Apple ID used for notarization |
+| `NOTARY_PASSWORD` | An app-specific password for that Apple ID |
+
+Without them, releases are signed ad hoc.

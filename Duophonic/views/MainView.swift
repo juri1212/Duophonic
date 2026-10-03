@@ -9,26 +9,12 @@ import SwiftUI
 
 struct MainView: View {
     @Binding var settingsShowing: Bool
-    @StateObject private var audioManager: AudioAggregateManager
-    @StateObject private var primarySelector: AudioDeviceSelectorModel
-    @StateObject private var secondarySelector: AudioDeviceSelectorModel
+    @EnvironmentObject private var audioManager: AudioAggregateManager
+    /// Only one device list is open at a time.
+    @State private var expandedRole: AudioAggregateManager.Role?
 
     init(settingsShowing: Binding<Bool> = .constant(false)) {
         _settingsShowing = settingsShowing
-        let manager = AudioAggregateManager()
-        _audioManager = StateObject(wrappedValue: manager)
-        _primarySelector = StateObject(
-            wrappedValue: AudioDeviceSelectorModel(
-                audioManager: manager,
-                isPrimary: true
-            )
-        )
-        _secondarySelector = StateObject(
-            wrappedValue: AudioDeviceSelectorModel(
-                audioManager: manager,
-                isPrimary: false
-            )
-        )
     }
 
     var body: some View {
@@ -38,106 +24,71 @@ struct MainView: View {
                 Spacer()
                 Toggle(
                     isOn: Binding(
-                        get: {
-                            audioManager.aggregateEnabled
-                        },
-                        set: { newValue in
-                            if newValue {
-                                guard
-                                    let p = primarySelector.currentDevice?
-                                        .audioDeviceInfo,
-                                    let s = secondarySelector.currentDevice?
-                                        .audioDeviceInfo,
-                                    p != s
-                                else {
-                                    audioManager.setStatusMessage(
-                                        "Cannot enable aggregate: invalid device selection"
-                                    )
-                                    return
-                                }
-                                audioManager.enableAggregate(
-                                    primary: p,
-                                    secondary: s
-                                )
-                                audioManager.refreshDevices()
-                            } else {
-                                audioManager.disableAggregate()
-                            }
-                        }
+                        get: { audioManager.isEnabled },
+                        set: { audioManager.setEnabled($0) }
                     )
                 ) {}
                 .toggleStyle(SwitchToggleStyle())
                 .help("Toggle multi-output aggregate device")
-                .disabled(
-                    {
-                        if audioManager.aggregateEnabled {
-                            return false
-                        }
-                        guard
-                            let p = primarySelector.currentDevice?
-                                .audioDeviceInfo,
-                            let s = secondarySelector.currentDevice?
-                                .audioDeviceInfo
-                        else { return true }
-                        return p == s
-                    }()
-                )
+                .accessibilityLabel("Multi-Output Device")
+                .disabled(!audioManager.isEnabled && !audioManager.canEnable)
             }
             .padding(.horizontal, 16)
 
-            VStack(spacing: 8) {
-                AudioDeviceSelectorView(viewModel: primarySelector)
-                    .onChange(of: primarySelector.isExpanded) { _, newValue in
-                        if newValue {
-                            secondarySelector.isExpanded = false
-                            audioManager.refreshDevices()
-                        }
-                    }
+            if let errorMessage = audioManager.errorMessage {
+                Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 16)
+                    .transition(.opacity)
+            }
 
-                AudioDeviceSelectorView(viewModel: secondarySelector)
-                    .onChange(of: secondarySelector.isExpanded) { _, newValue in
-                        if newValue {
-                            primarySelector.isExpanded = false
-                            audioManager.refreshDevices()
-                        }
-                    }
+            VStack(spacing: 8) {
+                AudioDeviceSelectorView(role: .primary, isExpanded: isExpanded(.primary))
+                AudioDeviceSelectorView(role: .secondary, isExpanded: isExpanded(.secondary))
             }
         }
         .background(Color.clear)
+        .animation(.easeInOut(duration: 0.2), value: audioManager.errorMessage)
         .onAppear {
             audioManager.refreshDevices()
-            initializeDeviceSelectors()
         }
         .onDisappear {
-            primarySelector.isExpanded = false
-            secondarySelector.isExpanded = false
+            expandedRole = nil
         }
         .onChange(of: settingsShowing) { _, newValue in
             if newValue {
-                primarySelector.isExpanded = false
-                secondarySelector.isExpanded = false
+                expandedRole = nil
+            }
+        }
+        .onChange(of: expandedRole) { _, newValue in
+            if newValue != nil {
+                audioManager.refreshDevices()
             }
         }
     }
 
-    private func initializeDeviceSelectors() {
-        if let subs = audioManager.readLiveAggregateSubDevices() {
-            audioManager.selectPrimaryDevice(subs.primaryDevice.id)
-            audioManager.selectSecondaryDevice(subs.secondaryDevice.id)
-        } else {
-            let opts = audioManager.outputDevices.filter { !$0.isAggregate }
-            if opts.count >= 2 {
-                audioManager.selectPrimaryDevice(opts[0].id)
-                audioManager.selectSecondaryDevice(opts[1].id)
-            } else if opts.count == 1 {
-                audioManager.selectPrimaryDevice(opts[0].id)
+    private func isExpanded(_ role: AudioAggregateManager.Role) -> Binding<Bool> {
+        Binding(
+            get: { expandedRole == role },
+            set: { expanded in
+                if expanded {
+                    expandedRole = role
+                } else if expandedRole == role {
+                    expandedRole = nil
+                }
             }
-        }
+        )
     }
 }
 
-#Preview {
-    MainView(settingsShowing: .constant(false))
-        .frame(width: 300 - 2 * 14, height: 300)
-        .padding(14)
-}
+#if DEBUG
+    #Preview {
+        MainView(settingsShowing: .constant(false))
+            .frame(width: 300 - 2 * 14, height: 300)
+            .padding(14)
+            .environmentObject(AudioAggregateManager.preview)
+    }
+#endif
