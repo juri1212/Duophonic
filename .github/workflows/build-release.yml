@@ -13,7 +13,16 @@ jobs:
     name: Build for macOS
     runs-on: macos-26
     permissions:
-      contents: write
+      contents: read
+    env:
+      APP_PATH: DerivedData/Build/Products/Release/Duophonic.app
+      # Optional. When set, the app is signed with a Developer ID certificate and notarized,
+      # so it opens without Gatekeeper warnings. Without them it is signed ad hoc.
+      MACOS_CERTIFICATE_P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}  # base64 encoded .p12
+      MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+      NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}  # app-specific password
 
     steps:
       - name: Checkout
@@ -28,45 +37,63 @@ jobs:
         run: |
           gem install --no-document xcpretty
 
+      - name: Import Developer ID certificate
+        if: env.MACOS_CERTIFICATE_P12 != ''
+        run: |
+          KEYCHAIN="$RUNNER_TEMP/signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+          echo "$MACOS_CERTIFICATE_P12" | base64 --decode > "$RUNNER_TEMP/certificate.p12"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$RUNNER_TEMP/certificate.p12" -k "$KEYCHAIN" \
+            -P "$MACOS_CERTIFICATE_PASSWORD" -f pkcs12 -A -t cert
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          rm "$RUNNER_TEMP/certificate.p12"
+
       - name: Build app (Release)
-        env:
-          SCHEME: "Duophonic"
-          CONFIGURATION: "Release"
         run: |
           set -o pipefail
-          LOG="DerivedData/xcodebuild.log"
-          mkdir -p "DerivedData"
-
-          xcodebuild -scheme "$SCHEME" -configuration "$CONFIGURATION" -sdk macosx clean build ONLY_ACTIVE_ARCH=NO CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" -derivedDataPath DerivedData 2>&1 | tee "$LOG" | xcpretty
-
-          rc=$?
-          if [ $rc -ne 0 ]; then
-            echo "xcodebuild failed with exit code $rc — dumping raw log:"
-            cat "$LOG" || true
-            exit $rc
+          mkdir -p DerivedData
+          if [ -n "$MACOS_CERTIFICATE_P12" ]; then
+            SIGNING=(CODE_SIGN_STYLE=Manual "CODE_SIGN_IDENTITY=Developer ID Application"
+              "DEVELOPMENT_TEAM=$APPLE_TEAM_ID" "OTHER_CODE_SIGN_FLAGS=--timestamp")
+          else
+            SIGNING=(CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM=)
+          fi
+          VERSIONING=("CURRENT_PROJECT_VERSION=${{ github.run_number }}")
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            VERSIONING+=("MARKETING_VERSION=${GITHUB_REF_NAME#v}")
           fi
 
-      - name: Find built .app
-        id: find_app
+          xcodebuild -scheme Duophonic -configuration Release \
+            -destination 'generic/platform=macOS' -derivedDataPath DerivedData \
+            clean build ONLY_ACTIVE_ARCH=NO "${SIGNING[@]}" "${VERSIONING[@]}" 2>&1 \
+            | tee DerivedData/xcodebuild.log | xcpretty \
+            || { echo "xcodebuild failed — dumping raw log:"; cat DerivedData/xcodebuild.log; exit 1; }
+
+          codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+
+      - name: Notarize
+        if: env.MACOS_CERTIFICATE_P12 != '' && env.NOTARY_APPLE_ID != ''
         run: |
-          find DerivedData -type d -name "*.app"
-          APP_PATH=$(find DerivedData -type d -name "*.app" | head -n 1)
-          if [ -z "$APP_PATH" ]; then
-            echo "No .app found"; exit 1
-          fi
-          echo "app_path=$APP_PATH" >> $GITHUB_OUTPUT
+          ditto -c -k --keepParent "$APP_PATH" "$RUNNER_TEMP/notarize.zip"
+          xcrun notarytool submit "$RUNNER_TEMP/notarize.zip" --wait \
+            --apple-id "$NOTARY_APPLE_ID" --password "$NOTARY_PASSWORD" --team-id "$APPLE_TEAM_ID"
+          xcrun stapler staple "$APP_PATH"
 
       - name: Package .app as zip
-        id: package
         run: |
           mkdir -p release
-          ditto -c -k --sequesterRsrc --keepParent "${{ steps.find_app.outputs.app_path }}" "release/Duophonic.zip"
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" release/Duophonic.zip
+          (cd release && shasum -a 256 Duophonic.zip > Duophonic.zip.sha256)
 
-      - name: Upload build zip artifact
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.ref_name || 'build' }}-${{ matrix.runner }}
-          path: release/*.zip
+          name: Duophonic
+          path: release/*
 
   release:
     name: Create GitHub release with artifacts
@@ -76,28 +103,14 @@ jobs:
       contents: write
     if: ${{ github.ref_type == 'tag' }}
     steps:
-      - name: Download all build artifacts
+      - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          path: release-artifacts
-
-      - name: Flatten artifact directories
-        run: |
-          # Move any zip files from subdirectories into the release-artifacts root
-          shopt -s globstar || true
-          find release-artifacts -type f -name '*.zip' -exec mv -t release-artifacts {} + || true
-
-      - name: List downloaded artifacts
-        run: |
-          ls -lh release-artifacts || true
-          tree release-artifacts || true
+          name: Duophonic
+          path: release
 
       - name: Create GitHub release and upload assets
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          body: |-
-            Release ${{ github.ref_name }}
-            - Built on macOS by GitHub Actions
-          files: release-artifacts/*.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          generate_release_notes: true
+          files: release/*
