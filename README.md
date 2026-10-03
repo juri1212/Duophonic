@@ -83,7 +83,8 @@ open /Applications/Duophonic.app
 - If macOS says the app can't be opened or verified, open `System Settings` → `Privacy & Security`, scroll to the message about Duophonic and click `Open Anyway`. Alternatively, remove the quarantine flag once: `xattr -dr com.apple.quarantine /Applications/Duophonic.app`.
 - If "Open at Login" stays pending, allow Duophonic in `System Settings` → `General` → `Login Items`.
 - If the downloaded file is different than the example above, replace the file name in the `curl` command with the correct file name shown on the release page.
-- Each release ships a `Duophonic.zip.sha256` file to verify the download with `shasum -a 256 -c Duophonic.zip.sha256`.
+- Each release ships a `Duophonic.zip.sha256` file to check the download isn't corrupted with `shasum -a 256 -c Duophonic.zip.sha256`.
+- To check the download was built from this repository by its release workflow, verify its build provenance with the [GitHub CLI](https://cli.github.com) before unzipping: `gh attestation verify Duophonic.zip -R juri1212/Duophonic`. Do this especially before removing the quarantine flag, as that skips the macOS malware check for unnotarized apps.
 
 ## Uninstall
 
