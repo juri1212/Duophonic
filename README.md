@@ -43,10 +43,10 @@ Requires macOS 26.1 or later.
 ## Usage
 
 - Open the app. It lists all detected output-capable audio devices (internal speakers, headphones, external DACs, Bluetooth devices, etc.).
-- Pick a `Primary` device and a `Secondary` device.
+- Click either output to choose its device from the list (the first output is the clock source).
 - Use the sliders to set per-device volumes (sliders are disabled if the device does not expose a software volume control).
-- Flip the toggle in the top-right to enable multi-output.
-- To stop multi-output, flip the toggle off, quit the app, or select another output in Control Center — the previous output will be restored.
+- Turn on the `Audio Sharing` switch at the top to play on both outputs.
+- To stop sharing, turn the switch off, quit the app, or select another output in Control Center — the previous output will be restored.
 
 ## Notes & Limitations
 
@@ -81,7 +81,7 @@ open /Applications/Duophonic.app
 ## Troubleshooting
 
 - If macOS says the app can't be opened or verified, open `System Settings` → `Privacy & Security`, scroll to the message about Duophonic and click `Open Anyway`. Alternatively, remove the quarantine flag once: `xattr -dr com.apple.quarantine /Applications/Duophonic.app`.
-- If "Start on login" stays pending, allow Duophonic in `System Settings` → `General` → `Login Items`.
+- If "Open at Login" stays pending, allow Duophonic in `System Settings` → `General` → `Login Items`.
 - If the downloaded file is different than the example above, replace the file name in the `curl` command with the correct file name shown on the release page.
 - Each release ships a `Duophonic.zip.sha256` file to verify the download with `shasum -a 256 -c Duophonic.zip.sha256`.
 

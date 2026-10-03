@@ -7,238 +7,107 @@
 
 import SwiftUI
 
+/// One of the two outputs: its device and volume, with an inline list to pick another device,
+/// like a shared listener in the Share Audio card on iPhone.
 struct AudioDeviceSelectorView: View {
     @EnvironmentObject private var audioManager: AudioAggregateManager
     let role: AudioAggregateManager.Role
     @Binding var isExpanded: Bool
-    @State private var isRefreshing = false
-    @Namespace private var audioNamespace
-    @State private var deviceListContentHeight: CGFloat = 0
-    private let deviceListMaxHeight: CGFloat = 220
-    private let deviceListFallbackHeight: CGFloat = 160
-
-    private var currentDeviceListHeight: CGFloat {
-        let measured =
-            deviceListContentHeight > 0
-            ? deviceListContentHeight : deviceListFallbackHeight
-        return min(measured, deviceListMaxHeight)
-    }
 
     private var currentDevice: AudioDevice? { audioManager.device(for: role) }
 
-    private var currentDeviceName: String {
-        if let currentDevice {
-            return currentDevice.name
-        }
-        if let name = audioManager.selectedName(for: role) {
-            return "\(name) (Not Connected)"
-        }
-        return "Not Connected"
-    }
+    /// Aligns content with the device name, past the icon column.
+    private let textInset = MenuMetrics.rowPadding + MenuMetrics.iconSize + MenuMetrics.iconSpacing
 
     var body: some View {
-        VStack {
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                withAnimation(.snappy) { isExpanded.toggle() }
+            } label: {
+                summary
+            }
+            .buttonStyle(MenuRowButtonStyle())
+            .accessibilityLabel(audioManager.selectedName(for: role) ?? "No Output")
+            .accessibilityValue(currentDevice == nil ? "Not Connected" : "")
+            .accessibilityHint(isExpanded ? "Hides the output devices" : "Shows the output devices")
+
+            volumeSlider
+                .padding(.leading, textInset)
+                .padding(.trailing, MenuMetrics.rowPadding)
+                .padding(.bottom, 6)
+
             if isExpanded {
-                expandedView
-                    .transition(
-                        .asymmetric(
-                            insertion: .opacity.combined(
-                                with: .scale(scale: 0.98)
-                            ),
-                            removal: .opacity.combined(
-                                with: .scale(scale: 0.92)
-                            )
-                        )
-                    )
-            } else {
-                controlSurface(cornerRadius: 20) {
-                    collapsedView
-                        .transition(
-                            .asymmetric(
-                                insertion: .opacity.combined(
-                                    with: .scale(scale: 0.98)
-                                ),
-                                removal: .opacity.combined(
-                                    with: .scale(scale: 0.92)
-                                )
-                            )
-                        )
-                }
-            }
-        }
-        .animation(
-            .spring(response: 0.36, dampingFraction: 0.85),
-            value: isExpanded
-        )
-    }
-
-    private var collapsedView: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 12) {
-                Circle()
-                    .fill(.ultraThinMaterial.opacity(0.4))
-                    .frame(width: 42, height: 42)
-                    .overlay(
-                        Image(systemName: currentDevice?.iconName ?? "speaker.slash")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundStyle(
-                                currentDevice != nil ? Color.accentColor : Color.secondary
-                            )
-                    )
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(currentDeviceName)
-                        .font(.callout.weight(.semibold))
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                    volumeSlider(compact: true)
-                }
-
-                Spacer()
-
-                Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.secondary)
-            }
-            .contentShape(Rectangle())
-            .onTapGesture { withAnimation { isExpanded.toggle() } }
-            .accessibilityAddTraits(.isButton)
-            .accessibilityAction(named: isExpanded ? "Hide Devices" : "Show Devices") {
-                withAnimation { isExpanded.toggle() }
+                deviceList
+                    .transition(.opacity)
             }
         }
     }
 
-    private var expandedView: some View {
-        controlSurface(cornerRadius: 20) {
-            VStack(alignment: .leading, spacing: 10) {
-                collapsedView
-                Divider().opacity(0.2)
-                ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 14) {
-                        if audioManager.devices.isEmpty {
-                            Text("No audio devices available")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        } else {
-                            section(title: "Audio Devices") {
-                                ForEach(audioManager.devices) { device in
-                                    AudioDeviceRow(
-                                        device: device,
-                                        isSelected: audioManager.uid(for: role) == device.uid,
-                                        action: {
-                                            audioManager.select(device.uid, for: role)
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                    .padding(.bottom, 4)
-                    .background(
-                        GeometryReader { proxy in
-                            Color.clear.preference(
-                                key: DeviceListHeightKey.self,
-                                value: proxy.size.height
-                            )
-                        }
-                    )
-                }
-                .frame(height: currentDeviceListHeight)
-                .frame(maxWidth: .infinity)
-                .onPreferenceChange(DeviceListHeightKey.self) {
-                    deviceListContentHeight = $0
-                }
+    private var summary: some View {
+        HStack(spacing: MenuMetrics.iconSpacing) {
+            DeviceIcon(
+                systemName: currentDevice?.iconName ?? "speaker.slash",
+                isActive: audioManager.isEnabled && currentDevice != nil
+            )
 
-                Button(action: refreshDevices) {
-                    HStack {
-                        Spacer()
-                        if isRefreshing {
-                            ProgressView().controlSize(.small)
-                        } else {
-                            Label("Refresh", systemImage: "arrow.clockwise")
-                                .labelStyle(.titleAndIcon)
-                                .font(.footnote)
-                        }
-                        Spacer()
-                    }
+            VStack(alignment: .leading, spacing: 0) {
+                Text(audioManager.selectedName(for: role) ?? "No Output")
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                if currentDevice == nil {
+                    Text("Not Connected")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
-                .buttonStyle(.plain)
             }
+
+            Spacer(minLength: 0)
+
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .rotationEffect(.degrees(isExpanded ? 90 : 0))
         }
     }
 
-    private func refreshDevices() {
-        guard !isRefreshing else { return }
-        isRefreshing = true
-        audioManager.refreshDevices()
-        Task {
-            try? await Task.sleep(for: .milliseconds(400))
-            isRefreshing = false
-        }
-    }
-
-    @ViewBuilder
-    private func volumeSlider(compact: Bool) -> some View {
-        let slider = Slider(
+    private var volumeSlider: some View {
+        Slider(
             value: Binding(
-                get: { currentDevice?.volume ?? 0.5 },
+                get: { currentDevice?.volume ?? 0 },
                 set: { audioManager.setVolume($0, for: role) }
             ),
             in: 0...1
         )
+        .controlSize(.small)
         .disabled(!(currentDevice?.supportsVolume ?? false))
-        .tint(.accentColor)
         .accessibilityLabel("\(currentDevice?.name ?? "Output") Volume")
-
-        HStack(spacing: 8) {
-            slider
-        }
-        .opacity(currentDevice == nil ? 0.45 : 1)
-        .animation(
-            .easeInOut(duration: 0.2),
-            value: currentDevice?.supportsVolume
-        )
-        .padding(.top, compact ? 0 : 4)
+        .help(
+            currentDevice?.supportsVolume == false
+                ? "This device's volume can only be changed on the device" : "")
     }
 
-    private func section<Content: View>(
-        title: String,
-        @ViewBuilder content: () -> Content
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.caption)
-                .textCase(.uppercase)
-                .foregroundStyle(.secondary)
-            content()
+    private var deviceList: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if audioManager.devices.isEmpty {
+                Text("No Output Devices")
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, MenuMetrics.rowPadding)
+                    .padding(.vertical, 5)
+            }
+            ForEach(audioManager.devices) { device in
+                AudioDeviceRow(
+                    device: device,
+                    isSelected: audioManager.uid(for: role) == device.uid,
+                    action: {
+                        audioManager.select(device.uid, for: role)
+                        withAnimation(.snappy) { isExpanded = false }
+                    }
+                )
+            }
         }
-    }
-
-    @ViewBuilder
-    private func controlSurface<Content: View>(
-        cornerRadius: CGFloat,
-        @ViewBuilder content: () -> Content
-    ) -> some View {
-        content()
-            .padding(12)
-            .background(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(.clear)
-                    .matchedGeometryEffect(
-                        id: "audioBackground",
-                        in: audioNamespace
-                    )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(Color.white.opacity(0.06))
-                    .matchedGeometryEffect(
-                        id: "audioBorder",
-                        in: audioNamespace
-                    )
-            )
-            .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 6)
+        // Nested under the output's name, like a disclosed section of a system menu.
+        .padding(.leading, MenuMetrics.iconSize + MenuMetrics.iconSpacing)
+        .padding(.bottom, 4)
     }
 }
 
@@ -249,65 +118,23 @@ private struct AudioDeviceRow: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 12) {
-                Image(systemName: device.iconName)
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(
-                        isSelected ? Color.accentColor : Color.secondary
-                    )
-                    .frame(width: 26, height: 26)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(device.name)
-                        .font(.callout)
-                    Text(device.category.subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-
-                if isSelected {
-                    Image(systemName: "checkmark")
-                        .font(.callout.weight(.semibold))
-                        .foregroundStyle(.white)
-                        .padding(6)
-                        .background(Circle().fill(Color.accentColor))
-                }
+            HStack(spacing: MenuMetrics.iconSpacing) {
+                DeviceIcon(systemName: device.iconName, isActive: isSelected, size: 22)
+                Text(device.name)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
-            .contentShape(Rectangle())
-            .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(
-                        isSelected
-                            ? Color.white.opacity(0.14)
-                            : Color.white.opacity(0.04)
-                    )
-            )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(MenuRowButtonStyle())
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 
-private struct DeviceListHeightKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = max(value, nextValue())
-    }
-}
-
 #if DEBUG
-    #Preview("Audio Device Control") {
-        VStack(alignment: .leading, spacing: 16) {
-            AudioDeviceSelectorView(role: .primary, isExpanded: .constant(true))
-                .padding()
-        }
-        .frame(width: 320, height: 320)
-        .background(Color.black)
-        .environmentObject(AudioAggregateManager.preview)
+    #Preview("Expanded Output") {
+        AudioDeviceSelectorView(role: .primary, isExpanded: .constant(true))
+            .padding(MenuMetrics.windowInset)
+            .frame(width: 300)
+            .environmentObject(AudioAggregateManager.preview)
     }
 #endif

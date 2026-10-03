@@ -7,33 +7,15 @@
 
 import SwiftUI
 
+/// The Audio Sharing module: a switch for sharing and the two outputs it plays to.
 struct MainView: View {
-    @Binding var settingsShowing: Bool
     @EnvironmentObject private var audioManager: AudioAggregateManager
     /// Only one device list is open at a time.
     @State private var expandedRole: AudioAggregateManager.Role?
 
-    init(settingsShowing: Binding<Bool> = .constant(false)) {
-        _settingsShowing = settingsShowing
-    }
-
     var body: some View {
-        VStack(spacing: 12) {
-            HStack {
-                Text("Multi-Output Device")
-                Spacer()
-                Toggle(
-                    isOn: Binding(
-                        get: { audioManager.isEnabled },
-                        set: { audioManager.setEnabled($0) }
-                    )
-                ) {}
-                .toggleStyle(SwitchToggleStyle())
-                .help("Toggle multi-output aggregate device")
-                .accessibilityLabel("Multi-Output Device")
-                .disabled(!audioManager.isEnabled && !audioManager.canEnable)
-            }
-            .padding(.horizontal, 16)
+        VStack(alignment: .leading, spacing: 0) {
+            header
 
             if let errorMessage = audioManager.errorMessage {
                 Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
@@ -41,16 +23,17 @@ struct MainView: View {
                     .foregroundStyle(.orange)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, MenuMetrics.rowPadding)
+                    .padding(.bottom, 6)
                     .transition(.opacity)
             }
 
-            VStack(spacing: 8) {
-                AudioDeviceSelectorView(role: .primary, isExpanded: isExpanded(.primary))
-                AudioDeviceSelectorView(role: .secondary, isExpanded: isExpanded(.secondary))
+            MenuSeparator()
+
+            ForEach(AudioAggregateManager.Role.allCases, id: \.self) { role in
+                AudioDeviceSelectorView(role: role, isExpanded: isExpanded(role))
             }
         }
-        .background(Color.clear)
         .animation(.easeInOut(duration: 0.2), value: audioManager.errorMessage)
         .onAppear {
             audioManager.refreshDevices()
@@ -58,16 +41,42 @@ struct MainView: View {
         .onDisappear {
             expandedRole = nil
         }
-        .onChange(of: settingsShowing) { _, newValue in
-            if newValue {
-                expandedRole = nil
-            }
-        }
         .onChange(of: expandedRole) { _, newValue in
             if newValue != nil {
                 audioManager.refreshDevices()
             }
         }
+    }
+
+    private var header: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Audio Sharing")
+                    .font(.headline)
+                Text(
+                    audioManager.isEnabled
+                        ? "Playing on both outputs" : "Play on two outputs at once"
+                )
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .contentTransition(.opacity)
+            }
+            Spacer()
+            Toggle(
+                "Audio Sharing",
+                isOn: Binding(
+                    get: { audioManager.isEnabled },
+                    set: { audioManager.setEnabled($0) }
+                )
+            )
+            .labelsHidden()
+            .toggleStyle(.switch)
+            .disabled(!audioManager.isEnabled && !audioManager.canEnable)
+            .help(audioManager.isEnabled ? "Stop sharing audio" : "Play on both outputs")
+        }
+        .padding(.horizontal, MenuMetrics.rowPadding)
+        .padding(.vertical, 6)
+        .animation(.easeInOut(duration: 0.2), value: audioManager.isEnabled)
     }
 
     private func isExpanded(_ role: AudioAggregateManager.Role) -> Binding<Bool> {
@@ -86,9 +95,9 @@ struct MainView: View {
 
 #if DEBUG
     #Preview {
-        MainView(settingsShowing: .constant(false))
-            .frame(width: 300 - 2 * 14, height: 300)
-            .padding(14)
+        MainView()
+            .padding(MenuMetrics.windowInset)
+            .frame(width: 300)
             .environmentObject(AudioAggregateManager.preview)
     }
 #endif
