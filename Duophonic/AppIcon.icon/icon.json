@@ -2,22 +2,12 @@
   "fill-specializations" : [
     {
       "value" : {
-        "automatic-gradient" : "display-p3:0.03922,0.72949,0.70996,1.00000",
-        "orientation" : {
-          "start" : {
-            "x" : 0.5,
-            "y" : 0
-          },
-          "stop" : {
-            "x" : 0.5,
-            "y" : 0.7
-          }
-        }
+        "automatic-gradient" : "display-p3:0.03922,0.72949,0.70996,1.00000"
       }
     },
     {
       "appearance" : "dark",
-      "value" : "automatic"
+      "value" : "system-dark"
     }
   ],
   "groups" : [
@@ -26,67 +16,61 @@
         {
           "fill-specializations" : [
             {
-              "appearance" : "tinted",
-              "value" : "none"
-            }
-          ],
-          "glass-specializations" : [
-            {
-              "value" : true
-            },
-            {
-              "appearance" : "tinted",
-              "value" : true
-            }
-          ],
-          "hidden" : false,
-          "image-name" : "duophonic_appicon_transparent.png",
-          "name" : "duophonic_appicon_transparent",
-          "opacity-specializations" : [
-            {
-              "appearance" : "dark",
-              "value" : 1
-            },
-            {
-              "appearance" : "tinted",
-              "value" : 1
-            }
-          ]
-        },
-        {
-          "fill-specializations" : [
-            {
-              "value" : "automatic"
-            },
-            {
               "appearance" : "dark",
               "value" : {
-                "solid" : "display-p3:0.03922,0.72949,0.70996,1.00000"
+                "solid" : "display-p3:0.30000,0.86000,0.82000,1.00000"
               }
             }
           ],
           "glass" : true,
-          "hidden" : false,
-          "image-name" : "duophonic_appicon_back.png",
-          "name" : "duophonic_appicon_back",
-          "opacity-specializations" : [
-            {
-              "value" : 0
-            },
+          "image-name" : "1_plug.svg",
+          "name" : "plug"
+        },
+        {
+          "fill-specializations" : [
             {
               "appearance" : "dark",
-              "value" : 1
-            },
-            {
-              "appearance" : "tinted",
-              "value" : 1
+              "value" : {
+                "solid" : "display-p3:0.30000,0.86000,0.82000,1.00000"
+              }
             }
-          ]
+          ],
+          "glass" : true,
+          "image-name" : "3_jacks.svg",
+          "name" : "jacks"
         }
       ],
+      "name" : "Connectors",
       "shadow" : {
         "kind" : "neutral",
         "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.4
+      }
+    },
+    {
+      "layers" : [
+        {
+          "fill-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : {
+                "solid" : "display-p3:0.30000,0.86000,0.82000,1.00000"
+              }
+            }
+          ],
+          "glass" : true,
+          "image-name" : "2_cable.svg",
+          "name" : "cable",
+          "opacity" : 1
+        }
+      ],
+      "name" : "Cable",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.4
       },
       "translucency" : {
         "enabled" : true,
@@ -95,9 +79,8 @@
     }
   ],
   "supported-platforms" : {
-    "circles" : [
-      "watchOS"
-    ],
-    "squares" : "shared"
+    "squares" : [
+      "macOS"
+    ]
   }
 }
