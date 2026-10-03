@@ -5,18 +5,20 @@
 //  Created by Juri Beforth on 13.12.25.
 //
 
-import ServiceManagement
 import SwiftUI
 
 struct SettingsView: View {
-    // Use EnvironmentObject to receive the appState injected in the App entrypoint
-    @EnvironmentObject var appState: AppState
-    @State private var placeholderToggle = false
+    @EnvironmentObject private var launchAtLogin: LaunchAtLogin
 
     var body: some View {
         VStack(spacing: 12) {
             // Use the label closure so we can add spacing between the label and the toggle control
-            Toggle(isOn: $appState.launchAtLogin) {
+            Toggle(
+                isOn: Binding(
+                    get: { launchAtLogin.isEnabled },
+                    set: { launchAtLogin.setEnabled($0) }
+                )
+            ) {
                 HStack {
                     Text("Start on login")
                     Spacer()
@@ -24,21 +26,23 @@ struct SettingsView: View {
             }
             .frame(maxWidth: .infinity)
             .toggleStyle(SwitchToggleStyle())
-            .onChange(of: appState.launchAtLogin) { _, newValue in
-                if newValue == true {
-                    try? SMAppService.mainApp.register()
-                } else {
-                    try? SMAppService.mainApp.unregister()
-                }
-            }
             .onAppear {
-                if SMAppService.mainApp.status == .enabled {
-                    appState.launchAtLogin = true
-                } else {
-                    appState.launchAtLogin = false
-                }
+                launchAtLogin.refresh()
             }
             .padding(.horizontal, 32)
+
+            if launchAtLogin.requiresApproval {
+                Button("Allow in Login Items Settings…", action: launchAtLogin.openSystemSettings)
+                    .buttonStyle(.link)
+                    .font(.caption)
+                    .padding(.horizontal, 32)
+            } else if let errorMessage = launchAtLogin.errorMessage {
+                Text(errorMessage)
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 32)
+            }
 
             Spacer()
 
@@ -80,9 +84,11 @@ struct SettingsView: View {
     }
 }
 
-#Preview {
-    SettingsView()
-        .frame(width: 260 - 2 * 14)
-        .padding(14)
-        .environmentObject(AppState())
-}
+#if DEBUG
+    #Preview {
+        SettingsView()
+            .frame(width: 260 - 2 * 14)
+            .padding(14)
+            .environmentObject(LaunchAtLogin())
+    }
+#endif
