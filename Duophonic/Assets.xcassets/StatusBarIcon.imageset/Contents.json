@@ -1,23 +1,16 @@
 {
   "images" : [
     {
-      "filename" : "menu-icon-18.png",
-      "idiom" : "universal",
-      "scale" : "1x"
-    },
-    {
-      "filename" : "menu-icon-36.png",
-      "idiom" : "universal",
-      "scale" : "2x"
-    },
-    {
-      "filename" : "menu-icon-54.png",
-      "idiom" : "universal",
-      "scale" : "3x"
+      "filename" : "menu-icon.svg",
+      "idiom" : "universal"
     }
   ],
   "info" : {
     "author" : "xcode",
     "version" : 1
+  },
+  "properties" : {
+    "preserves-vector-representation" : true,
+    "template-rendering-intent" : "template"
   }
 }
