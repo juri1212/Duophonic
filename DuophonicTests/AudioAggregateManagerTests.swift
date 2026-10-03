@@ -291,17 +291,39 @@ import Testing
                 uid: "\(AudioAggregateManager.aggregateUIDPrefix).old", name: "x",
                 mainSubDeviceUID: speakers.uid, subDeviceUIDs: [speakers.uid, airPods.uid]),
             AggregateDevice(
-                uid: "1234-ABCD:aggregate", name: AudioAggregateManager.aggregateName,
+                uid: "\(UUID().uuidString):aggregate", name: AudioAggregateManager.aggregateName,
                 mainSubDeviceUID: speakers.uid, subDeviceUIDs: [speakers.uid, airPods.uid]),
             AggregateDevice(
                 uid: "user-made-aggregate", name: "Studio", mainSubDeviceUID: nil,
+                subDeviceUIDs: []),
+            AggregateDevice(
+                uid: "com.example.OtherApp:aggregate", name: "Other", mainSubDeviceUID: nil,
                 subDeviceUIDs: []),
         ]
 
         let manager = makeManager()
 
         #expect(!manager.isEnabled)
-        #expect(hardware.aggregates.map(\.uid) == ["user-made-aggregate"])
+        #expect(
+            hardware.aggregates.map(\.uid) == [
+                "user-made-aggregate", "com.example.OtherApp:aggregate",
+            ])
+    }
+
+    @Test func aggregatesOfOtherAppsAreNotAdopted() {
+        let other = "com.example.OtherApp:aggregate"
+        hardware.aggregates = [
+            AggregateDevice(
+                uid: other, name: "Other", mainSubDeviceUID: speakers.uid,
+                subDeviceUIDs: [speakers.uid, airPods.uid])
+        ]
+        hardware.defaultDevices = [.output: other, .systemOutput: other]
+
+        let manager = makeManager()
+
+        #expect(!manager.isEnabled)
+        #expect(hardware.aggregates.map(\.uid) == [other])
+        #expect(hardware.defaultDevices[.output] == other)
     }
 
     @Test func leftoverDefaultAggregateThatCannotBeAdoptedRestoresOutput() {
