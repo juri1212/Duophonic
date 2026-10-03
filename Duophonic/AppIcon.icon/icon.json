@@ -1,85 +1,71 @@
 {
-  "fill-specializations" : [
+  "fill-specializations": [
     {
-      "value" : {
-        "automatic-gradient" : "display-p3:0.03922,0.72949,0.70996,1.00000"
+      "value": {
+        "automatic-gradient": "display-p3:0.03922,0.72949,0.70996,1.00000"
       }
     },
     {
-      "appearance" : "dark",
-      "value" : "system-dark"
+      "appearance": "dark",
+      "value": "system-dark"
     }
   ],
-  "groups" : [
+  "groups": [
     {
-      "layers" : [
+      "layers": [
         {
-          "fill-specializations" : [
+          "fill-specializations": [
             {
-              "appearance" : "dark",
-              "value" : {
-                "solid" : "display-p3:0.30000,0.86000,0.82000,1.00000"
+              "appearance": "dark",
+              "value": {
+                "solid": "display-p3:0.30000,0.86000,0.82000,1.00000"
               }
             }
           ],
-          "glass" : true,
-          "image-name" : "1_plug.svg",
-          "name" : "plug"
-        },
-        {
-          "fill-specializations" : [
-            {
-              "appearance" : "dark",
-              "value" : {
-                "solid" : "display-p3:0.30000,0.86000,0.82000,1.00000"
-              }
-            }
-          ],
-          "glass" : true,
-          "image-name" : "3_jacks.svg",
-          "name" : "jacks"
+          "glass": true,
+          "image-name": "1_plug.svg",
+          "name": "plug"
         }
       ],
-      "name" : "Connectors",
-      "shadow" : {
-        "kind" : "neutral",
-        "opacity" : 0.5
+      "name": "Plug",
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
       },
-      "translucency" : {
-        "enabled" : true,
-        "value" : 0.4
+      "translucency": {
+        "enabled": true,
+        "value": 0.4
       }
     },
     {
-      "layers" : [
+      "layers": [
         {
-          "fill-specializations" : [
+          "fill-specializations": [
             {
-              "appearance" : "dark",
-              "value" : {
-                "solid" : "display-p3:0.30000,0.86000,0.82000,1.00000"
+              "appearance": "dark",
+              "value": {
+                "solid": "display-p3:0.30000,0.86000,0.82000,1.00000"
               }
             }
           ],
-          "glass" : true,
-          "image-name" : "2_cable.svg",
-          "name" : "cable",
-          "opacity" : 1
+          "glass": true,
+          "image-name": "2_cable_jacks.svg",
+          "name": "cable_jacks"
         }
       ],
-      "name" : "Cable",
-      "shadow" : {
-        "kind" : "neutral",
-        "opacity" : 0.4
+      "name": "Cable",
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
       },
-      "translucency" : {
-        "enabled" : true,
-        "value" : 0.5
+      "translucency": {
+        "enabled": true,
+        "value": 0.5
       }
     }
   ],
-  "supported-platforms" : {
-    "squares" : [
+  "supported-platforms": {
+    "squares": [
       "macOS"
     ]
   }
