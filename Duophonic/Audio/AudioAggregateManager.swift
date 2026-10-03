@@ -252,8 +252,12 @@ final class AudioAggregateManager: ObservableObject {
     // MARK: - Helpers
 
     /// Aggregates created by Duophonic, including the `<UUID>:aggregate` UIDs of version 1.0.
+    /// The legacy form is matched exactly, so aggregates of other apps are never adopted or
+    /// destroyed.
     static func isOwnAggregate(_ uid: String) -> Bool {
-        uid.hasPrefix(aggregateUIDPrefix) || uid.hasSuffix(":aggregate")
+        if uid.hasPrefix(aggregateUIDPrefix) { return true }
+        guard uid.hasSuffix(":aggregate") else { return false }
+        return UUID(uuidString: String(uid.dropLast(":aggregate".count))) != nil
     }
 
     private func applySelectionToAggregate() {

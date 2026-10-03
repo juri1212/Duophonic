@@ -16,29 +16,29 @@ jobs:
       contents: read
     env:
       APP_PATH: DerivedData/Build/Products/Release/Duophonic.app
-      # Optional. When set, the app is signed with a Developer ID certificate and notarized,
-      # so it opens without Gatekeeper warnings. Without them it is signed ad hoc.
-      MACOS_CERTIFICATE_P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}  # base64 encoded .p12
-      MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
-      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-      NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
-      NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}  # app-specific password
+      # Optional. When the signing secrets are set, the app is signed with a Developer ID
+      # certificate and notarized, so it opens without Gatekeeper warnings. Without them it is
+      # signed ad hoc. The secrets themselves are only passed to the steps that use them, so
+      # third-party actions never see them.
+      HAS_DEVELOPER_ID: ${{ secrets.MACOS_CERTIFICATE_P12 != '' }}
+      HAS_NOTARY: ${{ secrets.MACOS_CERTIFICATE_P12 != '' && secrets.NOTARY_APPLE_ID != '' }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: 'latest'
 
-      - name: Install xcpretty
-        run: |
-          gem install --no-document xcpretty
-
       - name: Import Developer ID certificate
-        if: env.MACOS_CERTIFICATE_P12 != ''
+        if: env.HAS_DEVELOPER_ID == 'true'
+        env:
+          MACOS_CERTIFICATE_P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}  # base64 encoded .p12
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
         run: |
           KEYCHAIN="$RUNNER_TEMP/signing.keychain-db"
           KEYCHAIN_PASSWORD="$(uuidgen)"
@@ -47,16 +47,16 @@ jobs:
           security set-keychain-settings -lut 21600 "$KEYCHAIN"
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
           security import "$RUNNER_TEMP/certificate.p12" -k "$KEYCHAIN" \
-            -P "$MACOS_CERTIFICATE_PASSWORD" -f pkcs12 -A -t cert
+            -P "$MACOS_CERTIFICATE_PASSWORD" -f pkcs12 -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
           security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
           rm "$RUNNER_TEMP/certificate.p12"
 
       - name: Build app (Release)
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
-          set -o pipefail
-          mkdir -p DerivedData
-          if [ -n "$MACOS_CERTIFICATE_P12" ]; then
+          if [ "$HAS_DEVELOPER_ID" = "true" ]; then
             SIGNING=(CODE_SIGN_STYLE=Manual "CODE_SIGN_IDENTITY=Developer ID Application"
               "DEVELOPMENT_TEAM=$APPLE_TEAM_ID" "OTHER_CODE_SIGN_FLAGS=--timestamp")
           else
@@ -68,15 +68,39 @@ jobs:
           fi
 
           xcodebuild -scheme Duophonic -configuration Release \
-            -destination 'generic/platform=macOS' -derivedDataPath DerivedData \
-            clean build ONLY_ACTIVE_ARCH=NO "${SIGNING[@]}" "${VERSIONING[@]}" 2>&1 \
-            | tee DerivedData/xcodebuild.log | xcpretty \
-            || { echo "xcodebuild failed — dumping raw log:"; cat DerivedData/xcodebuild.log; exit 1; }
+            -destination 'generic/platform=macOS' -derivedDataPath DerivedData -quiet \
+            clean build ONLY_ACTIVE_ARCH=NO "${SIGNING[@]}" "${VERSIONING[@]}"
 
+      - name: Verify code signature
+        run: |
           codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+          # Never ship without the protections the project asks for: the sandbox, the hardened
+          # runtime, and no debugger attachment (which would also fail notarization).
+          ENTITLEMENTS="$RUNNER_TEMP/entitlements.plist"
+          codesign -d --entitlements "$ENTITLEMENTS" --xml "$APP_PATH"
+          entitlement() {
+            /usr/libexec/PlistBuddy -c "Print :$1" "$ENTITLEMENTS" 2>/dev/null || echo missing
+          }
+          failed=0
+          if [ "$(entitlement com.apple.security.app-sandbox)" != "true" ]; then
+            echo "::error::App Sandbox entitlement is missing"; failed=1
+          fi
+          if [ "$(entitlement com.apple.security.get-task-allow)" = "true" ]; then
+            echo "::error::Release build allows debugger attachment (get-task-allow)"; failed=1
+          fi
+          signature=$(codesign -dv "$APP_PATH" 2>&1)
+          if [[ "$signature" != *"flags="*runtime* ]]; then
+            echo "::error::Hardened runtime is not enabled"; failed=1
+          fi
+          codesign -d --entitlements - "$APP_PATH"
+          exit "$failed"
 
       - name: Notarize
-        if: env.MACOS_CERTIFICATE_P12 != '' && env.NOTARY_APPLE_ID != ''
+        if: env.HAS_NOTARY == 'true'
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}  # app-specific password
         run: |
           ditto -c -k --keepParent "$APP_PATH" "$RUNNER_TEMP/notarize.zip"
           xcrun notarytool submit "$RUNNER_TEMP/notarize.zip" --wait \
@@ -101,6 +125,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      # For the build provenance attestation, which lets users verify a download came from
+      # this workflow: gh attestation verify Duophonic.zip -R juri1212/Duophonic
+      id-token: write
+      attestations: write
     if: ${{ github.ref_type == 'tag' }}
     steps:
       - name: Download build artifact
@@ -108,6 +136,11 @@ jobs:
         with:
           name: Duophonic
           path: release
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: release/Duophonic.zip
 
       - name: Create GitHub release and upload assets
         uses: softprops/action-gh-release@v3
