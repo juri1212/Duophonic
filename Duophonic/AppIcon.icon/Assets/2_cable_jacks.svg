@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <g fill="none" stroke="#FFFFFF" stroke-width="52" stroke-linecap="butt" stroke-linejoin="round">
+    <path d="M512 530 V552 C512 626 322 600 322 672 V740"/>
+    <path d="M512 530 V552 C512 626 702 600 702 672 V740"/>
+  </g>
+  <g fill="#FFFFFF" fill-rule="evenodd">
+    <path d="M322 684 A80 80 0 0 1 402 764 V808 A80 80 0 0 1 242 808 V764 A80 80 0 0 1 322 684 Z M322 778 A34 34 0 1 0 322 846 A34 34 0 1 0 322 778 Z"/>
+    <path d="M702 684 A80 80 0 0 1 782 764 V808 A80 80 0 0 1 622 808 V764 A80 80 0 0 1 702 684 Z M702 778 A34 34 0 1 0 702 846 A34 34 0 1 0 702 778 Z"/>
+  </g>
+</svg>
