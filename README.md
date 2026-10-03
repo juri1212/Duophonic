@@ -109,6 +109,22 @@ Run the unit tests with `⌘U` in Xcode or:
 xcodebuild test -scheme Duophonic -destination 'platform=macOS'
 ```
 
+### Running from the command line
+
+Build and launch the app without opening Xcode. This works from any checkout, including a git worktree, because the build output goes into the checkout's own (git-ignored) `build/` folder:
+
+```bash
+xcodebuild -project Duophonic.xcodeproj -scheme Duophonic -configuration Debug \
+  -destination 'platform=macOS' -derivedDataPath build build
+open build/Build/Products/Debug/Duophonic.app
+```
+
+Quit any other running copy of Duophonic first (e.g. the one in `/Applications`), otherwise macOS may just bring that one to the front. To see the app's console output, run the binary directly instead of using `open`:
+
+```bash
+build/Build/Products/Debug/Duophonic.app/Contents/MacOS/Duophonic
+```
+
 Core Audio access is behind the `AudioHardware` protocol. `CoreAudioHardware` talks to the system, while the tests and SwiftUI previews use `InMemoryAudioHardware`.
 
 ### Testing routing without a second device
