@@ -7,13 +7,12 @@
 
 import SwiftUI
 
-/// The menu bar window, laid out like the system's Control Center modules.
+/// The menu bar window: a header and two plates on the window's Liquid Glass.
 /// It draws no background of its own so the window's Liquid Glass shows through.
 struct ContentView: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: MenuMetrics.sectionSpacing) {
             MainView()
-            MenuSeparator()
             MenuActionsView()
         }
         .padding(MenuMetrics.windowInset)
@@ -23,7 +22,7 @@ struct ContentView: View {
 #if DEBUG
     #Preview("Off") {
         ContentView()
-            .frame(width: 300)
+            .frame(width: MenuMetrics.windowWidth)
             .environmentObject(AudioAggregateManager.preview)
             .environmentObject(LaunchAtLogin())
     }
@@ -32,7 +31,7 @@ struct ContentView: View {
         let manager = AudioAggregateManager.preview
         manager.setEnabled(true)
         return ContentView()
-            .frame(width: 300)
+            .frame(width: MenuMetrics.windowWidth)
             .environmentObject(manager)
             .environmentObject(LaunchAtLogin())
     }
