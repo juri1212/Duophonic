@@ -7,13 +7,12 @@
 
 import SwiftUI
 
-/// The menu bar window, laid out like the system's Control Center modules.
+/// The menu bar window: a header and two plates on the window's Liquid Glass.
 /// It draws no background of its own so the window's Liquid Glass shows through.
 struct ContentView: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: MenuMetrics.sectionSpacing) {
             MainView()
-            MenuSeparator()
             MenuActionsView()
         }
         .padding(MenuMetrics.windowInset)
@@ -21,9 +20,33 @@ struct ContentView: View {
 }
 
 #if DEBUG
+    /// A colorful desktop that darkens in Dark Mode, like the system wallpapers.
+    private struct PreviewDesktop: View {
+        @Environment(\.colorScheme) private var colorScheme
+
+        var body: some View {
+            LinearGradient(
+                colors: [.orange, .pink, .indigo, .teal],
+                startPoint: .topLeading, endPoint: .bottomTrailing
+            )
+            .overlay(.black.opacity(colorScheme == .dark ? 0.6 : 0))
+        }
+    }
+
+    extension View {
+        /// Stands in for the menu bar window in previews: Liquid Glass over a desktop,
+        /// so the transparency of the plates can be judged.
+        func previewOnWindowGlass() -> some View {
+            frame(width: MenuMetrics.windowWidth)
+                .glassEffect(.regular, in: .rect(cornerRadius: 24))
+                .padding(32)
+                .background { PreviewDesktop() }
+        }
+    }
+
     #Preview("Off") {
         ContentView()
-            .frame(width: 300)
+            .previewOnWindowGlass()
             .environmentObject(AudioAggregateManager.preview)
             .environmentObject(LaunchAtLogin())
     }
@@ -32,7 +55,7 @@ struct ContentView: View {
         let manager = AudioAggregateManager.preview
         manager.setEnabled(true)
         return ContentView()
-            .frame(width: 300)
+            .previewOnWindowGlass()
             .environmentObject(manager)
             .environmentObject(LaunchAtLogin())
     }
