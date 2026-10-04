@@ -16,9 +16,6 @@ struct AudioDeviceSelectorView: View {
 
     private var currentDevice: AudioDevice? { audioManager.device(for: role) }
 
-    /// Aligns content with the device name, past the icon column.
-    private let textInset = MenuMetrics.rowPadding + MenuMetrics.iconSize + MenuMetrics.iconSpacing
-
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Button {
@@ -28,17 +25,17 @@ struct AudioDeviceSelectorView: View {
             }
             .buttonStyle(MenuRowButtonStyle())
             .accessibilityLabel(audioManager.selectedName(for: role) ?? "No Output")
-            .accessibilityValue(currentDevice == nil ? "Not Connected" : "")
+            .accessibilityValue(currentDevice == nil ? "Not Connected" : role.title)
             .accessibilityHint(isExpanded ? "Hides the output devices" : "Shows the output devices")
 
             volumeSlider
-                .padding(.leading, textInset)
-                .padding(.trailing, MenuMetrics.rowPadding)
-                .padding(.bottom, 6)
+                .padding(.horizontal, MenuMetrics.rowPadding)
+                .padding(.top, 3)
+                .padding(.bottom, 9)
 
             if isExpanded {
                 deviceList
-                    .transition(.opacity)
+                    .transition(.opacity.combined(with: .scale(scale: 0.97, anchor: .top)))
             }
         }
     }
@@ -50,44 +47,45 @@ struct AudioDeviceSelectorView: View {
                 isActive: audioManager.isEnabled && currentDevice != nil
             )
 
-            VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 1) {
                 Text(audioManager.selectedName(for: role) ?? "No Output")
+                    .fontWeight(.semibold)
                     .lineLimit(1)
                     .truncationMode(.middle)
-                if currentDevice == nil {
-                    Text("Not Connected")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+                Text(caption)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .contentTransition(.opacity)
             }
 
             Spacer(minLength: 0)
 
-            Image(systemName: "chevron.right")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .rotationEffect(.degrees(isExpanded ? 90 : 0))
+            ChevronBadge(isOpen: isExpanded)
         }
     }
 
+    private var caption: String {
+        if currentDevice == nil { return "Not Connected" }
+        return audioManager.isEnabled ? "\(role.title) · \(role.detail)" : role.title
+    }
+
     private var volumeSlider: some View {
-        Slider(
+        VolumeCapsule(
             value: Binding(
                 get: { currentDevice?.volume ?? 0 },
                 set: { audioManager.setVolume($0, for: role) }
             ),
-            in: 0...1
+            label: "\(currentDevice?.name ?? "Output") Volume"
         )
-        .controlSize(.small)
         .disabled(!(currentDevice?.supportsVolume ?? false))
-        .accessibilityLabel("\(currentDevice?.name ?? "Output") Volume")
         .help(
             currentDevice?.supportsVolume == false
                 ? "This device's volume can only be changed on the device" : "")
     }
 
     private var deviceList: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        let shape = RoundedRectangle(cornerRadius: 14, style: .continuous)
+        return VStack(alignment: .leading, spacing: 0) {
             if audioManager.devices.isEmpty {
                 Text("No Output Devices")
                     .foregroundStyle(.secondary)
@@ -98,6 +96,7 @@ struct AudioDeviceSelectorView: View {
                 AudioDeviceRow(
                     device: device,
                     isSelected: audioManager.uid(for: role) == device.uid,
+                    otherRole: audioManager.uid(for: role.other) == device.uid ? role.other : nil,
                     action: {
                         audioManager.select(device.uid, for: role)
                         withAnimation(.snappy) { isExpanded = false }
@@ -105,28 +104,61 @@ struct AudioDeviceSelectorView: View {
                 )
             }
         }
-        // Nested under the output's name, like a disclosed section of a system menu.
-        .padding(.leading, MenuMetrics.iconSize + MenuMetrics.iconSpacing)
-        .padding(.bottom, 4)
+        // A recessed well under the output, like a disclosed section of Control Center.
+        .padding(4)
+        .containerShape(shape)
+        .background { WellBackground(shape: shape) }
+        .padding(.horizontal, 2)
+        .padding(.bottom, 6)
     }
+}
+
+extension AudioAggregateManager.Role {
+    var title: String { self == .primary ? "Output 1" : "Output 2" }
+    var detail: String { self == .primary ? "Clock source" : "Drift corrected" }
 }
 
 private struct AudioDeviceRow: View {
     let device: AudioDevice
     let isSelected: Bool
+    /// The other output, if it plays on this device. Picking it swaps the two.
+    let otherRole: AudioAggregateManager.Role?
     let action: () -> Void
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: MenuMetrics.iconSpacing) {
-                DeviceIcon(systemName: device.iconName, isActive: isSelected, size: 22)
-                Text(device.name)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
+                DeviceIcon(
+                    systemName: device.iconName, isActive: isSelected,
+                    size: MenuMetrics.smallIconSize)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(device.name)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                    Text(device.category.subtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+                if let otherRole {
+                    Text(otherRole.title)
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 2)
+                        .background(GlassFill.well(colorScheme), in: .capsule)
+                }
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(DuoColor.ink(colorScheme))
+                }
             }
         }
-        .buttonStyle(MenuRowButtonStyle())
+        .buttonStyle(MenuRowButtonStyle(isHighlighted: isSelected))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityValue(otherRole.map { "Used by \($0.title)" } ?? "")
     }
 }
 
@@ -134,7 +166,7 @@ private struct AudioDeviceRow: View {
     #Preview("Expanded Output") {
         AudioDeviceSelectorView(role: .primary, isExpanded: .constant(true))
             .padding(MenuMetrics.windowInset)
-            .frame(width: 300)
+            .frame(width: MenuMetrics.windowWidth)
             .environmentObject(AudioAggregateManager.preview)
     }
 #endif

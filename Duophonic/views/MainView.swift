@@ -14,7 +14,7 @@ struct MainView: View {
     @State private var expandedRole: AudioAggregateManager.Role?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: MenuMetrics.sectionSpacing) {
             header
 
             if let errorMessage = audioManager.errorMessage {
@@ -24,15 +24,18 @@ struct MainView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, MenuMetrics.rowPadding)
-                    .padding(.bottom, 6)
                     .transition(.opacity)
             }
 
-            MenuSeparator()
-
-            ForEach(AudioAggregateManager.Role.allCases, id: \.self) { role in
-                AudioDeviceSelectorView(role: role, isExpanded: isExpanded(role))
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(AudioAggregateManager.Role.allCases, id: \.self) { role in
+                    AudioDeviceSelectorView(role: role, isExpanded: isExpanded(role))
+                    if role == .primary {
+                        SyncDivider(isLive: audioManager.isEnabled)
+                    }
+                }
             }
+            .plate()
         }
         .animation(.easeInOut(duration: 0.2), value: audioManager.errorMessage)
         .onAppear {
@@ -49,7 +52,9 @@ struct MainView: View {
     }
 
     private var header: some View {
-        HStack {
+        HStack(spacing: 12) {
+            appGlyph
+
             VStack(alignment: .leading, spacing: 1) {
                 Text("Audio Sharing")
                     .font(.headline)
@@ -71,12 +76,35 @@ struct MainView: View {
             )
             .labelsHidden()
             .toggleStyle(.switch)
+            .tint(DuoColor.accent)
             .disabled(!audioManager.isEnabled && !audioManager.canEnable)
             .help(audioManager.isEnabled ? "Stop sharing audio" : "Play on both outputs")
         }
-        .padding(.horizontal, MenuMetrics.rowPadding)
-        .padding(.vertical, 6)
+        .padding(.horizontal, MenuMetrics.plateInset + 1)
+        .padding(.top, 4)
         .animation(.easeInOut(duration: 0.2), value: audioManager.isEnabled)
+    }
+
+    /// The menu bar icon, lit like the outputs while sharing.
+    private var appGlyph: some View {
+        let shape = RoundedRectangle(cornerRadius: 10, style: .continuous)
+        return Image("StatusBarIcon")
+            .renderingMode(.template)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 18, height: 18)
+            .foregroundStyle(
+                audioManager.isEnabled ? AnyShapeStyle(.white) : AnyShapeStyle(.primary)
+            )
+            .frame(width: 34, height: 34)
+            .background {
+                if audioManager.isEnabled {
+                    LensBackground(shape: shape)
+                } else {
+                    WellBackground(shape: shape)
+                }
+            }
+            .accessibilityHidden(true)
     }
 
     private func isExpanded(_ role: AudioAggregateManager.Role) -> Binding<Bool> {
@@ -97,7 +125,7 @@ struct MainView: View {
     #Preview {
         MainView()
             .padding(MenuMetrics.windowInset)
-            .frame(width: 300)
+            .frame(width: MenuMetrics.windowWidth)
             .environmentObject(AudioAggregateManager.preview)
     }
 #endif
