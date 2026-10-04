@@ -28,3 +28,57 @@ jobs:
           xcodebuild test -scheme Duophonic -destination 'platform=macOS' \
             -derivedDataPath DerivedData -quiet \
             CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM=
+
+  end-to-end:
+    name: End-to-end routing tests
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: 'latest'
+
+      - name: Install BlackHole
+        run: |
+          brew install --cask blackhole-2ch blackhole-16ch
+          # Core Audio only loads new drivers on start; launchd restarts it.
+          sudo killall coreaudiod
+          for _ in {1..30}; do
+            devices=$(system_profiler SPAudioDataType)
+            if grep -q 'BlackHole 2ch' <<<"$devices" && grep -q 'BlackHole 16ch' <<<"$devices"; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::BlackHole devices didn't appear"
+          exit 1
+
+      # Without microphone access macOS records silence. The runners have SIP disabled, so
+      # the permission can be granted to the test host (the app) directly in the TCC database.
+      - name: Grant microphone access
+        run: |
+          grant="INSERT OR REPLACE INTO access VALUES('kTCCServiceMicrophone',
+            'com.juri1212.Duophonic',0,2,3,1,NULL,NULL,0,'UNUSED',NULL,0,$(date +%s),NULL,NULL,'UNUSED',0);"
+          sqlite3 "$HOME/Library/Application Support/com.apple.TCC/TCC.db" "$grant"
+          sudo sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" "$grant"
+
+      - name: Run end-to-end tests
+        run: |
+          set -o pipefail
+          xcodebuild test -scheme Duophonic -destination 'platform=macOS' \
+            -only-testing:DuophonicTests/AudioRoutingTests \
+            -derivedDataPath DerivedData -resultBundlePath e2e.xcresult -quiet \
+            CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM=
+
+      # The suite skips itself without BlackHole, which would otherwise pass silently.
+      - name: Check nothing was skipped
+        run: |
+          summary=$(xcrun xcresulttool get test-results summary --path e2e.xcresult)
+          echo "$summary"
+          jq -e '.passedTests >= 3 and .skippedTests == 0' <<<"$summary" >/dev/null

@@ -117,6 +117,12 @@ final class CoreAudioHardware: AudioHardware {
             throw CoreAudioError(
                 operation: "Creating the multi-output device", status: kAudioHardwareBadDeviceError)
         }
+        // The HAL publishes the device asynchronously: for about 10 ms its UID often doesn't
+        // resolve yet, which would fail whatever the caller does with it next.
+        let deadline = Date.now.addingTimeInterval(1)
+        while (try? deviceID(forUID: configuration.uid)) == nil, Date.now < deadline {
+            Thread.sleep(forTimeInterval: 0.005)
+        }
         logger.info("Created aggregate \(configuration.uid, privacy: .public)")
     }
 
