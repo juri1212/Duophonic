@@ -68,11 +68,13 @@ jobs:
           sqlite3 "$HOME/Library/Application Support/com.apple.TCC/TCC.db" "$grant"
           sudo sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" "$grant"
 
+      # In parallel, xcodebuild runs the suite in several app clones at once, whose tones then
+      # interfere at the shared BlackHole devices.
       - name: Run end-to-end tests
         run: |
           set -o pipefail
           xcodebuild test -scheme Duophonic -destination 'platform=macOS' \
-            -only-testing:DuophonicTests/AudioRoutingTests \
+            -only-testing:DuophonicTests/AudioRoutingTests -parallel-testing-enabled NO \
             -derivedDataPath DerivedData -resultBundlePath e2e.xcresult -quiet \
             CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM=
 
