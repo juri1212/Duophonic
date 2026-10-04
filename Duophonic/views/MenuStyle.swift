@@ -52,16 +52,16 @@ enum DuoColor {
 /// because glass can't sample other glass.
 enum GlassFill {
     static func plate(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? .white.opacity(0.07) : .white.opacity(0.4)
+        scheme == .dark ? .white.opacity(0.045) : .white.opacity(0.26)
     }
 
     /// A recessed area, such as a slider track or the device list.
     static func well(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? .black.opacity(0.24) : .black.opacity(0.07)
+        scheme == .dark ? .black.opacity(0.2) : .black.opacity(0.06)
     }
 
     static func highlight(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? .white.opacity(0.12) : .white.opacity(0.62)
+        scheme == .dark ? .white.opacity(0.1) : .white.opacity(0.5)
     }
 
     /// The specular rim along the top edge of a raised shape.
@@ -103,18 +103,23 @@ extension View {
 /// The teal lens behind an active glyph: a lit gradient, an inner rim and a colored glow.
 struct LensBackground<S: InsettableShape>: View {
     let shape: S
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
+        // On dark glass the glow reads as a bright halo, so it stays faint and tight there.
+        let isDark = colorScheme == .dark
         shape
             .fill(DuoColor.lensGradient)
             .overlay {
                 shape.strokeBorder(
                     LinearGradient(
-                        colors: [.white.opacity(0.75), .white.opacity(0)],
+                        colors: [.white.opacity(isDark ? 0.4 : 0.75), .white.opacity(0)],
                         startPoint: .top, endPoint: .center),
                     lineWidth: 1)
             }
-            .shadow(color: DuoColor.accent.opacity(0.45), radius: 6, y: 3)
+            .shadow(
+                color: DuoColor.accent.opacity(isDark ? 0.18 : 0.4),
+                radius: isDark ? 3 : 6, y: isDark ? 1 : 3)
     }
 }
 
