@@ -18,8 +18,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var signalSources: [any DispatchSourceSignal] = []
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Unit tests are hosted by the app; keep them away from the real audio setup.
-        guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else {
+        // Unit tests and Xcode previews are hosted by the app; keep them away from the real
+        // audio setup, and from quitting because Duophonic is already running.
+        let environment = ProcessInfo.processInfo.environment
+        guard environment["XCTestConfigurationFilePath"] == nil,
+            environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1"
+        else {
             return
         }
         guard !isAnotherInstanceRunning else {
