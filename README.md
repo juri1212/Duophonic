@@ -136,7 +136,7 @@ Core Audio access is behind the `AudioHardware` protocol. `CoreAudioHardware` ta
 brew install sox blackhole-2ch blackhole-16ch
 ```
 
-- `AudioRoutingTests` plays a test tone into a private aggregate of both BlackHole devices and asserts it arrives at each. It also checks that the tone keeps playing while the aggregate is changed in place. The suite is skipped when BlackHole isn't installed. The first run asks for microphone access (Debug builds only), which macOS requires before it records anything other than silence.
+- `AudioRoutingTests` plays a test tone into a private aggregate of both BlackHole devices and asserts it arrives at each. It also checks that the tone keeps playing while the aggregate is changed in place. The suite is skipped when BlackHole isn't installed. The first run asks for microphone access (Debug builds only), which macOS requires before it records anything other than silence. The tests turn both BlackHole devices up to full volume while they measure and restore your volumes afterwards. CI runs the suite in its own job, which installs BlackHole on the runner.
 - `scripts/verify-routing.sh` checks the running app: pick both BlackHole devices in Duophonic, enable it, then run the script. Your terminal needs microphone access.
 
 ### Releasing

@@ -97,9 +97,27 @@ struct AudioRoutingTests {
         return uid
     }
 
+    /// BlackHole applies its volume control to what it loops back, so the tone only arrives at
+    /// the amplitude it was played with at full volume. Returns a closure restoring the volumes.
+    private func turnUpOutputs() throws -> () -> Void {
+        let outputs = hardware.outputDevices().filter {
+            [blackHole2chUID, blackHole16chUID].contains($0.uid) && $0.supportsVolume
+        }
+        for output in outputs {
+            try hardware.setVolume(1, ofDeviceWithUID: output.uid)
+        }
+        return { [hardware] in
+            for output in outputs {
+                try? hardware.setVolume(output.volume ?? 1, ofDeviceWithUID: output.uid)
+            }
+        }
+    }
+
     private func expectToneAtBothOutputs(
         sourceLocation: SourceLocation = #_sourceLocation
     ) async throws {
+        let restoreVolumes = try turnUpOutputs()
+        defer { restoreVolumes() }
         let first = try LoopbackRecorder(uid: blackHole2chUID)
         defer { first.stop() }
         let second = try LoopbackRecorder(uid: blackHole16chUID)
