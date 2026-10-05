@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>How to play audio on two AirPods (or any two outputs) on a Mac – Duophonic</title>
+    <meta
+      name="description"
+      content="macOS plays sound on one output at a time. Here's how to listen with two pairs of AirPods, or headphones and speakers together, using Audio MIDI Setup or the free Duophonic app."
+    />
+    <link
+      rel="canonical"
+      href="https://juri1212.github.io/Duophonic/blog/play-mac-audio-on-two-outputs/"
+    />
+    <link rel="icon" type="image/png" href="../../site/favicon.png" />
+    <link rel="apple-touch-icon" href="../../site/apple-touch-icon.png" />
+    <link rel="stylesheet" href="../../site/style.css" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Duophonic" />
+    <meta property="og:title" content="How to play audio on two AirPods (or any two outputs) on a Mac" />
+    <meta
+      property="og:description"
+      content="Listen with two pairs of AirPods, or headphones and speakers together, on one Mac: the built-in way and the one-switch way."
+    />
+    <meta
+      property="og:url"
+      content="https://juri1212.github.io/Duophonic/blog/play-mac-audio-on-two-outputs/"
+    />
+    <meta property="og:image" content="https://juri1212.github.io/Duophonic/site/og-image.jpg" />
+    <meta property="article:published_time" content="2026-10-05" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": "How to play audio on two AirPods (or any two outputs) on a Mac",
+        "description": "macOS plays sound on one output at a time. How to listen with two pairs of AirPods, or headphones and speakers together, using Audio MIDI Setup or the free Duophonic app.",
+        "image": "https://juri1212.github.io/Duophonic/images/menu-sharing.png",
+        "datePublished": "2026-10-05",
+        "dateModified": "2026-10-05",
+        "author": { "@type": "Person", "name": "Juri Beforth", "url": "https://github.com/juri1212" },
+        "mainEntityOfPage": "https://juri1212.github.io/Duophonic/blog/play-mac-audio-on-two-outputs/"
+      }
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="../../"><img src="../../site/icon-256.png" alt="" />Duophonic</a>
+        <nav>
+          <a href="../">Blog</a>
+          <a href="https://github.com/juri1212/Duophonic">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <article>
+        <header>
+          <h1>How to play audio on two AirPods (or any two outputs) on a Mac</h1>
+          <p class="meta">
+            By <a href="https://github.com/juri1212">Juri Beforth</a> ·
+            <time datetime="2026-10-05">October 5, 2026</time> · 6 min read
+          </p>
+        </header>
+
+        <p>
+          Two people, one laptop, one film. On an iPhone you'd tap <em>Share Audio</em> and both
+          pairs of AirPods would play. On a Mac, the sound menu lets you pick exactly one output.
+          Choose your AirPods and the speakers go quiet; choose your friend's and yours do.
+        </p>
+        <p>
+          macOS can play to several devices at once. The feature is just hidden in a utility most
+          people never open. This guide shows the built-in way first, then the faster way with
+          <a href="../../">Duophonic</a>, a small free menu bar app I wrote to make it one switch.
+        </p>
+
+        <div class="summary">
+          <strong>Short version</strong>
+          <ol>
+            <li>Connect both outputs to your Mac (for AirPods: pair both in Bluetooth settings).</li>
+            <li>
+              Install <a href="../../">Duophonic</a> and click its icon in the menu bar.
+            </li>
+            <li>Pick Output 1 and Output 2.</li>
+            <li>Turn on <strong>Audio Sharing</strong>. Sound now plays on both, in sync.</li>
+          </ol>
+        </div>
+
+        <h2>Works for more than AirPods</h2>
+        <p>
+          Anything that shows up as a sound output can be combined: AirPods, Beats or other
+          Bluetooth headphones, the built-in speakers, USB headsets and DACs, and monitors over
+          HDMI or DisplayPort. A few setups people use it for:
+        </p>
+        <ul>
+          <li>Two people watching the same film with their own headphones, on a plane or a train.</li>
+          <li>Headphones on for you, the room speakers on for everyone else at a party.</li>
+          <li>Demoing on a big screen while monitoring the sound in your own headphones.</li>
+        </ul>
+
+        <h2>The built-in way: a Multi-Output Device in Audio MIDI Setup</h2>
+        <p>
+          macOS ships a utility called <strong>Audio MIDI Setup</strong> that can combine outputs
+          into a <em>Multi-Output Device</em>. It works, but it takes a few steps each time you set
+          it up:
+        </p>
+        <ol>
+          <li>
+            Open <strong>Audio MIDI Setup</strong> (in <em>Applications → Utilities</em>, or search
+            for it with Spotlight, <kbd>⌘</kbd> <kbd>Space</kbd>).
+          </li>
+          <li>
+            Click the <strong>+</strong> button in the bottom-left corner and choose
+            <strong>Create Multi-Output Device</strong>.
+          </li>
+          <li>Tick <strong>Use</strong> next to both outputs you want to play on.</li>
+          <li>
+            Choose the <strong>Primary Device</strong>. It sets the timing that the other output
+            follows.
+          </li>
+          <li>
+            Tick <strong>Drift Correction</strong> for the other output, so it doesn't slowly fall
+            out of sync.
+          </li>
+          <li>
+            Control-click the new Multi-Output Device in the sidebar and choose
+            <strong>Use This Device For Sound Output</strong>.
+          </li>
+        </ol>
+        <p>A few things make this awkward to live with:</p>
+        <ul>
+          <li>
+            <strong>No volume control.</strong> macOS can't change the volume of a Multi-Output
+            Device, so the volume keys and the slider in Control Center stop working. You have to go
+            back into Audio MIDI Setup to change each device's level.
+          </li>
+          <li>
+            <strong>You switch back by hand.</strong> When you're done, you have to pick your normal
+            output again. Alert sounds may also stay on the old device.
+          </li>
+          <li>
+            <strong>It sticks around.</strong> The Multi-Output Device stays in your list of
+            outputs until you delete it in Audio MIDI Setup.
+          </li>
+        </ul>
+
+        <h2>The one-switch way: Duophonic</h2>
+        <p>
+          Duophonic creates the same kind of multi-output device for you, with Core Audio, and
+          handles the parts above: a volume slider per device, drift correction already on,
+          switching outputs while it plays, and putting everything back when you stop.
+        </p>
+
+        <figure>
+          <img
+            src="../../site/menu-sharing.webp"
+            width="768"
+            height="922"
+            alt="Duophonic menu bar window with Audio Sharing on, playing on MacBook Pro Speakers and AirPods Pro, In Sync"
+          />
+          <figcaption>
+            Sharing to the built-in speakers and a pair of AirPods. Each output has its own volume.
+          </figcaption>
+        </figure>
+
+        <h3>1. Install Duophonic</h3>
+        <ol>
+          <li>
+            <a href="https://github.com/juri1212/Duophonic/releases/latest/download/Duophonic.zip"
+              >Download Duophonic.zip</a
+            >
+            (the latest release from GitHub). It needs macOS 26.1 or later.
+          </li>
+          <li>Double-click the zip to unpack it, then drag <strong>Duophonic</strong> into your Applications folder.</li>
+          <li>Open it from Applications.</li>
+        </ol>
+        <p>
+          If macOS says it can't verify the app, open <strong>System Settings → Privacy &amp;
+          Security</strong>, scroll down to the message about Duophonic and click
+          <strong>Open Anyway</strong>. You only need to do this once.
+        </p>
+        <p>Prefer the Terminal? This downloads, installs and opens it in one go:</p>
+        <pre><code>curl -sSLO https://github.com/juri1212/Duophonic/releases/latest/download/Duophonic.zip &amp;&amp; \
+unzip -q Duophonic.zip &amp;&amp; rm -f Duophonic.zip &amp;&amp; \
+mv Duophonic.app /Applications/ &amp;&amp; open /Applications/Duophonic.app</code></pre>
+        <p>
+          Duophonic has no Dock icon and no window. Look for its icon (a cable splitting in two) in
+          the menu bar at the top of the screen.
+        </p>
+
+        <h3>2. Connect both outputs</h3>
+        <p>
+          Duophonic plays on devices that are already connected to your Mac. For wired speakers or
+          a monitor, plug them in. For AirPods or other Bluetooth headphones:
+        </p>
+        <ol>
+          <li>Open <strong>System Settings → Bluetooth</strong>.</li>
+          <li>
+            Your own AirPods usually show up already. Click <strong>Connect</strong>.
+          </li>
+          <li>
+            For the second pair, put the AirPods in pairing mode. On most models: put them in their
+            case, open the lid and hold the button on the back until the light flashes white. When
+            they appear in the list, click <strong>Connect</strong>.
+          </li>
+        </ol>
+        <p>
+          New devices show up in Duophonic as soon as they connect. There's nothing to refresh.
+        </p>
+
+        <h3>3. Pick your two outputs</h3>
+        <p>
+          Click the Duophonic icon in the menu bar. Click <strong>Output 1</strong> or
+          <strong>Output 2</strong> to choose a device from the list. The first time you open it,
+          Duophonic preselects your current output and a pair of headphones if it finds one, and it
+          remembers your choice from then on.
+        </p>
+        <figure>
+          <img
+            src="../../site/menu-off.webp"
+            width="768"
+            height="922"
+            alt="Duophonic menu bar window before sharing, showing Output 1 and Output 2 and the Audio Sharing switch turned off"
+          />
+          <figcaption>Before sharing: two outputs chosen, the switch still off.</figcaption>
+        </figure>
+        <p>
+          Output 1 is the <em>clock source</em> that sets the timing. Output 2 is drift corrected
+          to follow it. If you pick the device that's already in the other slot, the two swap.
+        </p>
+
+        <h3>4. Turn on Audio Sharing</h3>
+        <p>
+          Flip the <strong>Audio Sharing</strong> switch at the top. The label changes to
+          <em>Playing on both outputs</em> and the badge between the two devices shows
+          <em>In Sync</em>. Everything your Mac plays (music, video, games) now goes to both.
+        </p>
+        <p>
+          You can change either output while it's playing. The music keeps going.
+        </p>
+
+        <h3>5. Set the volume</h3>
+        <p>
+          Use the slider under each device to set its volume, so one person can listen louder than
+          the other. Like with Audio MIDI Setup, the volume keys don't work while sharing, because
+          macOS can't change the volume of a combined device. If a slider is grayed out, that
+          device doesn't let apps change its volume. Use the buttons on the device itself instead.
+        </p>
+
+        <h3>6. Stop sharing</h3>
+        <p>
+          Turn the switch off, quit Duophonic, or just pick another output in Control Center.
+          Duophonic restores the output you had before (for sound and for alerts) and removes the
+          temporary device it created.
+        </p>
+        <p>
+          To have it ready all the time, turn on <strong>Open at Login</strong> in the same menu.
+        </p>
+
+        <h2>Tips for good sync</h2>
+        <ul>
+          <li>
+            <strong>Similar devices sync best.</strong> Drift correction stops two outputs from
+            wandering apart over time, but it can't remove the delay that Bluetooth itself adds. Two
+            pairs of AirPods stay closely together. Bluetooth headphones next to wired speakers
+            can sound slightly behind, which you'll notice most if you can hear both at once.
+          </li>
+          <li>
+            <strong>Avoid using a headset's microphone.</strong> When a Bluetooth headset's mic is
+            in use, for example during a call, macOS switches it into a lower-quality mode for both
+            listening and talking.
+          </li>
+          <li>
+            <strong>Use Output 1 for the device that matters most.</strong> It's the clock source,
+            so it plays without any resampling.
+          </li>
+        </ul>
+
+        <h2>FAQ</h2>
+
+        <h3>Can I connect two pairs of AirPods to one Mac?</h3>
+        <p>
+          Yes. A Mac can be connected to several Bluetooth audio devices at the same time, but it
+          plays to only one of them unless you combine them into a multi-output device, either in
+          Audio MIDI Setup or with Duophonic.
+        </p>
+
+        <h3>Does the Mac have a Share Audio feature like the iPhone?</h3>
+        <p>
+          Not in the sound menu. The closest built-in option is the Multi-Output Device in Audio
+          MIDI Setup described above. Duophonic is a shortcut for setting one up and managing it.
+        </p>
+
+        <h3>Can I play to more than two outputs?</h3>
+        <p>
+          Duophonic is made for two, hence the name. Audio MIDI Setup lets you tick as many devices
+          as you like in a Multi-Output Device.
+        </p>
+
+        <h3>Is Duophonic free? Does it collect data?</h3>
+        <p>
+          It's free and open source under the MIT license. It runs in the macOS app sandbox without
+          network access, so it can't send anything anywhere. You can read every line of the
+          <a href="https://github.com/juri1212/Duophonic">source on GitHub</a>.
+        </p>
+
+        <h3>What if Duophonic quits unexpectedly?</h3>
+        <p>
+          The next time you open it, Duophonic either picks up where it left off or removes the
+          leftover device and restores your output. You can also delete the device by hand in Audio
+          MIDI Setup.
+        </p>
+
+        <h3>How do I uninstall it?</h3>
+        <p>
+          Quit Duophonic, then drag it from Applications to the Trash. To remove its settings too,
+          run:
+        </p>
+        <pre><code>rm -rf ~/Library/Containers/com.juri1212.Duophonic</code></pre>
+
+        <h2>Try it</h2>
+        <p>
+          <a
+            class="button"
+            href="https://github.com/juri1212/Duophonic/releases/latest/download/Duophonic.zip"
+            >Download Duophonic</a
+          >
+        </p>
+        <p>
+          Found a bug or have an idea?
+          <a href="https://github.com/juri1212/Duophonic/issues">Open an issue on GitHub</a>.
+        </p>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        Duophonic by <a href="https://github.com/juri1212">Juri Beforth</a> ·
+        <a href="https://github.com/juri1212/Duophonic">Source on GitHub</a> ·
+        <a href="https://github.com/juri1212/Duophonic/blob/main/LICENSE.md">MIT License</a>
+      </div>
+    </footer>
+  </body>
+</html>
