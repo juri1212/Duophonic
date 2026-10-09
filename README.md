@@ -7,9 +7,11 @@ Duophonic for Mac lets you do the same with sound — listening together.
 
 Easily send macOS audio to two outputs at once — perfect for parties, demos, or running headphones and speakers together. Lightweight, system-aware, and built with Core Audio so everything stays in sync.
 
-|  |  | |
-|---:|:---|:---|
-| <img src="docs/images/main-view.png" alt="Main UI" width="440" /> | <img src="docs/images/main-view-expanded.png" alt="Main UI" width="440" /> | <img src="docs/images/settings-view.png" alt="Settings UI" width="440" /> |
+|  |  |
+|---:|:---|
+| <img src="docs/images/menu-off.png" alt="Duophonic with two outputs chosen, Audio Sharing off" width="384" /> | <img src="docs/images/menu-sharing.png" alt="Duophonic sharing audio to MacBook Pro Speakers and AirPods Pro" width="384" /> |
+
+**Website:** [juri1212.github.io/Duophonic](https://juri1212.github.io/Duophonic/) · **Guide:** [How to play audio on two AirPods (or any two outputs) on a Mac](https://juri1212.github.io/Duophonic/blog/play-mac-audio-on-two-outputs/)
 
 ## Quick Download & Install
 
@@ -152,3 +154,7 @@ Push a tag like `v1.2.0` to build the app and publish a GitHub release; the tag 
 | `NOTARY_PASSWORD` | An app-specific password for that Apple ID |
 
 Without them, releases are signed ad hoc.
+
+### Website
+
+The website and blog are static pages in `docs/`, served by GitHub Pages from the `main` branch's `/docs` folder. Preview them with `python3 -m http.server -d docs` and open http://localhost:8000. When adding a post, put it in `docs/blog/<slug>/index.html`, link it from `docs/blog/index.html` and add it to `docs/sitemap.xml`.
