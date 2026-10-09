@@ -253,6 +253,11 @@ final class CoreAudioHardware: AudioHardware {
         let transportType = uint32(kAudioDevicePropertyTransportType, of: id) ?? 0
         guard !isAggregate(id), transportType != kAudioDeviceTransportTypeAggregate,
             uint32(kAudioDevicePropertyIsHidden, of: id) != 1,
+            // Helper devices such as Microsoft Teams Audio opt out of being a default output,
+            // which also keeps them out of the system's Sound menu.
+            uint32(
+                kAudioDevicePropertyDeviceCanBeDefaultDevice, kAudioObjectPropertyScopeOutput,
+                of: id) != 0,
             hasOutputStreams(id),
             let uid = string(kAudioDevicePropertyDeviceUID, of: id),
             let name = string(kAudioObjectPropertyName, of: id)
@@ -342,9 +347,11 @@ final class CoreAudioHardware: AudioHardware {
     }
 
     private func uint32(
-        _ selector: AudioObjectPropertySelector, of id: AudioObjectID
+        _ selector: AudioObjectPropertySelector,
+        _ scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal,
+        of id: AudioObjectID
     ) -> UInt32? {
-        var address = Self.address(selector)
+        var address = Self.address(selector, scope)
         var value: UInt32 = 0
         var size = UInt32(MemoryLayout<UInt32>.size)
         guard AudioObjectGetPropertyData(id, &address, 0, nil, &size, &value) == noErr else {
