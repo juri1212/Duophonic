@@ -15,23 +15,18 @@ struct MenuActionsView: View {
     private static let githubURL = URL(string: "https://github.com/juri1212/Duophonic")!
     private static let soundSettingsURL = URL(
         string: "x-apple.systempreferences:com.apple.Sound-Settings.extension")!
+    private static let bluetoothSettingsURL = URL(
+        string: "x-apple.systempreferences:com.apple.BluetoothSettings")!
 
     var body: some View {
         VStack(alignment: .leading, spacing: MenuMetrics.sectionSpacing) {
             VStack(alignment: .leading, spacing: 0) {
-                Button {
-                    NSWorkspace.shared.open(Self.soundSettingsURL)
-                } label: {
-                    HStack(spacing: MenuMetrics.iconSpacing) {
-                        IconBadge(systemName: "slider.horizontal.3")
-                        Text("Sound Settings…")
-                        Spacer()
-                        Image(systemName: "arrow.up.forward")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .buttonStyle(MenuRowButtonStyle())
+                settingsLink(
+                    "Sound Settings…", systemImage: "slider.horizontal.3",
+                    url: Self.soundSettingsURL)
+                settingsLink(
+                    "Bluetooth Settings…", systemImage: "wave.3.right",
+                    url: Self.bluetoothSettingsURL)
 
                 HStack(spacing: MenuMetrics.iconSpacing) {
                     IconBadge(systemName: "power")
@@ -92,6 +87,25 @@ struct MenuActionsView: View {
         .onAppear {
             launchAtLogin.refresh()
         }
+    }
+
+    /// A row that opens a pane of System Settings.
+    private func settingsLink(_ title: LocalizedStringKey, systemImage: String, url: URL)
+        -> some View
+    {
+        Button {
+            NSWorkspace.shared.open(url)
+        } label: {
+            HStack(spacing: MenuMetrics.iconSpacing) {
+                IconBadge(systemName: systemImage)
+                Text(title)
+                Spacer()
+                Image(systemName: "arrow.up.forward")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .buttonStyle(MenuRowButtonStyle())
     }
 
     /// The standard About panel, with a link to the project as credits.
