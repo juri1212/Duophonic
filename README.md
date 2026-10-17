@@ -152,3 +152,23 @@ Push a tag like `v1.2.0` to build the app and publish a GitHub release; the tag 
 | `NOTARY_PASSWORD` | An app-specific password for that Apple ID |
 
 Without them, releases are signed ad hoc.
+
+#### App Store
+
+The same tag can also upload the app to App Store Connect, where it shows up in TestFlight. Submitting it for review is up to you in App Store Connect. To set it up:
+
+1. In the [developer portal](https://developer.apple.com/account/resources), create an *Apple Distribution* and a *Mac Installer Distribution* certificate. Then create a *Mac App Store Connect* provisioning profile for `com.juri1212.Duophonic` that uses the distribution certificate.
+2. Install both certificates, select them in Keychain Access, and export them together as one `.p12`.
+3. In App Store Connect under *Users and Access → Integrations*, create a team API key with the *App Manager* role.
+4. Add these repository secrets (in addition to `APPLE_TEAM_ID`) and set the repository variable `APP_STORE_UPLOAD` to `true`:
+
+| Secret | Value |
+|---|---|
+| `MAS_CERTIFICATES_P12` | Base64 of the `.p12` with both certificates (`base64 -i certs.p12`) |
+| `MAS_CERTIFICATES_PASSWORD` | Password of that `.p12` |
+| `MAS_PROVISIONING_PROFILE` | Base64 of the provisioning profile (`base64 -i Duophonic.provisionprofile`) |
+| `APP_STORE_CONNECT_API_KEY` | Contents of the downloaded `AuthKey_<id>.p8` |
+| `APP_STORE_CONNECT_KEY_ID` | The key's ID |
+| `APP_STORE_CONNECT_ISSUER_ID` | The issuer ID shown above the keys |
+
+The provisioning profile expires after a year; renew it and update the secret.
