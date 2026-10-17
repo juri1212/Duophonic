@@ -14,6 +14,8 @@ private let logger = Logger(subsystem: "com.juri1212.Duophonic", category: "App"
 final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Owned by the app rather than a view, so the aggregate's lifetime matches the process.
     let audioManager = AudioAggregateManager(hardware: CoreAudioHardware())
+    let conversationAwareness = ConversationAwarenessManager(
+        control: ControlCenterConversationAwareness())
     let launchAtLogin = LaunchAtLogin()
     private var signalSources: [any DispatchSourceSignal] = []
 
@@ -33,6 +35,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         quitGracefullyOnSignals()
         audioManager.start()
+        conversationAwareness.start(following: audioManager.$devices)
+    }
+
+    /// Restoring Conversation Awareness drives the Sound menu, which takes a moment.
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        guard conversationAwareness.hasPausedDevices else { return .terminateNow }
+        Task {
+            await conversationAwareness.shutdown()
+            sender.reply(toApplicationShouldTerminate: true)
+        }
+        return .terminateLater
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -73,6 +86,7 @@ struct Duophonic: App {
             ContentView()
                 .frame(width: MenuMetrics.windowWidth)
                 .environmentObject(appDelegate.audioManager)
+                .environmentObject(appDelegate.conversationAwareness)
                 .environmentObject(appDelegate.launchAtLogin)
         } label: {
             Image("StatusBarIcon")
