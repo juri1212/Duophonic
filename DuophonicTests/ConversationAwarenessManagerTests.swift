@@ -165,16 +165,33 @@ import Testing
         #expect(savedSettings == nil)
     }
 
-    @Test func withoutPermissionItIsRequestedFirst() async {
+    @Test func withoutPermissionNothingChanges() async {
         control.isAllowed = false
         let manager = await makeManager()
 
         manager.setPaused(true, for: airPods)
         await settle(manager)
 
-        #expect(control.permissionRequests == 1)
-        #expect(manager.needsPermission)
+        #expect(!manager.isAllowed)
         #expect(!manager.isPaused(airPods))
         #expect(control.changes.isEmpty)
+    }
+
+    @Test func grantedPermissionIsPickedUpAndRestoresLeftOverPauses() async {
+        defaults.set([airPods.name: true], forKey: "conversationAwarenessPreviousSettings")
+        control.settings[airPods.name] = false
+        control.isAllowed = false
+        let manager = await makeManager()
+        manager.requestPermission()
+        #expect(control.permissionRequests == 1)
+        #expect(control.changes.isEmpty)
+
+        control.isAllowed = true
+        manager.refreshPermission()
+        await settle(manager)
+
+        #expect(manager.isAllowed)
+        #expect(control.settings[airPods.name] == true)
+        #expect(savedSettings == nil)
     }
 }

@@ -23,7 +23,10 @@ final class ConversationAwarenessManager: ObservableObject {
     @Published private(set) var busyNames: Set<String> = []
     /// Last failure, shown in the UI until the next successful action.
     @Published private(set) var errorMessage: String?
-    @Published private(set) var needsPermission = false
+    /// Whether Duophonic has the Accessibility access it needs. The switches are hidden until then.
+    @Published private(set) var isAllowed: Bool
+    /// The AirPods the error or permission request is about.
+    @Published private(set) var messageDeviceName: String?
 
     private let control: ConversationAwarenessControl
     private let defaults: UserDefaults
@@ -46,6 +49,7 @@ final class ConversationAwarenessManager: ObservableObject {
     init(control: ConversationAwarenessControl, defaults: UserDefaults = .standard) {
         self.control = control
         self.defaults = defaults
+        isAllowed = control.isAllowed
         pendingRestores =
             defaults.dictionary(forKey: Key.previousSettings) as? [String: Bool] ?? [:]
     }
@@ -62,19 +66,29 @@ final class ConversationAwarenessManager: ObservableObject {
 
     func setPaused(_ pause: Bool, for device: AudioDevice) {
         guard !isBusy(device) else { return }
-        guard control.isAllowed else {
-            control.requestPermission()
-            needsPermission = true
-            errorMessage = nil
-            return
-        }
-        needsPermission = false
+        messageDeviceName = device.name
+        refreshPermission()
+        guard isAllowed else { return }
         Task {
             if pause {
                 await self.pause(device.name)
             } else {
                 await self.resume(device.name)
             }
+        }
+    }
+
+    /// Asks for Accessibility access, which changing Conversation Awareness needs.
+    func requestPermission() {
+        control.requestPermission()
+    }
+
+    /// Picks up Accessibility access granted or revoked in System Settings.
+    func refreshPermission() {
+        let wasAllowed = isAllowed
+        isAllowed = control.isAllowed
+        if isAllowed, !wasAllowed {
+            restorePendingOfConnected()
         }
     }
 
@@ -155,9 +169,13 @@ final class ConversationAwarenessManager: ObservableObject {
             )
             onFailure()
             save()
-            errorMessage = error.localizedDescription
             if error as? ConversationAwarenessError == .accessibilityNotAllowed {
-                needsPermission = true
+                // The permission hint replaces the switches, so no message is needed.
+                isAllowed = false
+                errorMessage = nil
+            } else {
+                messageDeviceName = name
+                errorMessage = error.localizedDescription
             }
         }
     }
@@ -189,9 +207,14 @@ final class ConversationAwarenessManager: ObservableObject {
 
     private func devicesDidChange(_ devices: [AudioDevice]) {
         airPods = devices.filter(\.isAirPods)
+        isAllowed = control.isAllowed
+        restorePendingOfConnected()
+    }
+
+    private func restorePendingOfConnected() {
         let connected = Set(airPods.map(\.name))
         let restorable = pendingRestores.keys.filter(connected.contains)
-        guard !restorable.isEmpty, control.isAllowed else { return }
+        guard !restorable.isEmpty, isAllowed else { return }
         Task {
             for name in restorable.sorted() {
                 await restorePending(name)

@@ -33,6 +33,10 @@ struct AudioDeviceSelectorView: View {
                 .padding(.top, 3)
                 .padding(.bottom, 9)
 
+            if let currentDevice, currentDevice.isAirPods {
+                ConversationAwarenessToggle(device: currentDevice)
+            }
+
             if isExpanded {
                 deviceList
                     .transition(.opacity.combined(with: .scale(scale: 0.97, anchor: .top)))
@@ -168,5 +172,6 @@ private struct AudioDeviceRow: View {
             .padding(MenuMetrics.windowInset)
             .frame(width: MenuMetrics.windowWidth)
             .environmentObject(AudioAggregateManager.preview)
+            .environmentObject(ConversationAwarenessManager.preview)
     }
 #endif

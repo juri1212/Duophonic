@@ -127,5 +127,6 @@ struct MainView: View {
             .padding(MenuMetrics.windowInset)
             .frame(width: MenuMetrics.windowWidth)
             .environmentObject(AudioAggregateManager.preview)
+            .environmentObject(ConversationAwarenessManager.preview)
     }
 #endif
