@@ -18,9 +18,12 @@ struct AudioDevice: Identifiable, Equatable {
 
     var id: String { uid }
     var supportsVolume: Bool { volume != nil }
+    var isAirPods: Bool {
+        category == .bluetooth && name.localizedCaseInsensitiveContains("airpods")
+    }
 
     var iconName: String {
-        if category == .bluetooth && name.localizedCaseInsensitiveContains("airpods") {
+        if isAirPods {
             return "airpods.gen3"
         }
         return category.iconName

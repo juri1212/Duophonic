@@ -13,6 +13,7 @@ struct ContentView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: MenuMetrics.sectionSpacing) {
             MainView()
+            ConversationAwarenessView()
             MenuActionsView()
         }
         .padding(MenuMetrics.windowInset)
@@ -48,6 +49,7 @@ struct ContentView: View {
         ContentView()
             .previewOnWindowGlass()
             .environmentObject(AudioAggregateManager.preview)
+            .environmentObject(ConversationAwarenessManager.preview)
             .environmentObject(LaunchAtLogin())
     }
 
@@ -57,6 +59,7 @@ struct ContentView: View {
         return ContentView()
             .previewOnWindowGlass()
             .environmentObject(manager)
+            .environmentObject(ConversationAwarenessManager.preview)
             .environmentObject(LaunchAtLogin())
     }
 #endif

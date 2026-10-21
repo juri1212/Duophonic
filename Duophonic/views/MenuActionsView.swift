@@ -11,12 +11,15 @@ import SwiftUI
 /// The menu items below the Audio Sharing module.
 struct MenuActionsView: View {
     @EnvironmentObject private var launchAtLogin: LaunchAtLogin
+    @EnvironmentObject private var conversationAwareness: ConversationAwarenessManager
 
     private static let githubURL = URL(string: "https://github.com/juri1212/Duophonic")!
     private static let soundSettingsURL = URL(
         string: "x-apple.systempreferences:com.apple.Sound-Settings.extension")!
     private static let bluetoothSettingsURL = URL(
         string: "x-apple.systempreferences:com.apple.BluetoothSettings")!
+    private static let accessibilitySettingsURL = URL(
+        string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
 
     var body: some View {
         VStack(alignment: .leading, spacing: MenuMetrics.sectionSpacing) {
@@ -61,6 +64,8 @@ struct MenuActionsView: View {
                         .padding(.horizontal, MenuMetrics.rowPadding)
                         .padding(.vertical, 3)
                 }
+
+                conversationAwarenessAccess
             }
             .plate()
 
@@ -86,7 +91,49 @@ struct MenuActionsView: View {
         }
         .onAppear {
             launchAtLogin.refresh()
+            conversationAwareness.refreshPermission()
         }
+    }
+
+    /// The Accessibility access that pausing Conversation Awareness of AirPods needs. The switches
+    /// under the AirPods appear once it's granted; afterwards the row leads to where it can be revoked.
+    private var conversationAwarenessAccess: some View {
+        let isAllowed = conversationAwareness.isAllowed
+        return Button {
+            if !isAllowed {
+                conversationAwareness.requestPermission()
+            }
+            NSWorkspace.shared.open(Self.accessibilitySettingsURL)
+        } label: {
+            HStack(spacing: MenuMetrics.iconSpacing) {
+                IconBadge(systemName: "person.wave.2")
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("Conversation Awareness")
+                    Text(
+                        isAllowed
+                            ? "Access granted"
+                            : "Allow access to pause it on AirPods"
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .contentTransition(.opacity)
+                }
+                Spacer(minLength: 0)
+                if isAllowed {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(DuoColor.accent)
+                } else {
+                    Image(systemName: "arrow.up.forward")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .buttonStyle(MenuRowButtonStyle())
+        .accessibilityValue(isAllowed ? "Access granted" : "Access not granted")
+        .animation(.easeInOut(duration: 0.2), value: isAllowed)
     }
 
     /// A row that opens a pane of System Settings.
@@ -132,5 +179,6 @@ struct MenuActionsView: View {
             .padding(MenuMetrics.windowInset)
             .frame(width: MenuMetrics.windowWidth)
             .environmentObject(LaunchAtLogin())
+            .environmentObject(ConversationAwarenessManager.preview)
     }
 #endif

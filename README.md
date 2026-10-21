@@ -36,6 +36,7 @@ Requires macOS 26.1 or later.
 - Follows your hardware: devices that connect or disconnect show up immediately, and a reconnected device rejoins playback automatically.
 - Remembers your two outputs between launches and preselects the current output plus a pair of headphones the first time.
 - Safe lifecycle handling: the app restores the previous outputs (for audio and for alerts) and removes the multi-output device when disabled, on quit, or when you pick another output in Control Center. If the app was killed, it cleans up on the next launch.
+- Pause Conversation Awareness per pair of connected AirPods, so the volume doesn't drop while you talk. Each pair gets its previous setting back when you switch the pause off or quit Duophonic, or on the next launch if the AirPods were disconnected or the app was killed.
 - Ideal for **listening with two pairs of AirPods** (or any two Bluetooth headsets). Create an aggregate output, set each AirPod pair as one of the outputs, and enjoy synced playback between both sets.
 
 
@@ -53,6 +54,7 @@ Requires macOS 26.1 or later.
 - The aggregate device is created as a temporary, app-managed device and is removed when disabled. If the app is terminated unexpectedly the aggregate remains until Duophonic is opened again, which either resumes or removes it. You can also remove it in the Audio MIDI Setup app.
 - macOS can't change the volume of a multi-output device, so the volume keys and the Control Center slider don't work while it's enabled. Use the per-device sliders in Duophonic instead.
 - Some devices (notably certain Bluetooth or USB audio interfaces) may not expose software volume controls; in that case the slider will be disabled and you'll need to adjust hardware volume on the device itself.
+- Pausing Conversation Awareness needs Accessibility access and the Sound item in the menu bar. macOS only lets its own processes change this setting, so Duophonic briefly opens the Sound menu and picks Off or On there, like you would. The Conversation Awareness item under Open at Login shows whether access is granted and leads to the setting; until it is, the switches under the AirPods stay hidden. The app isn’t sandboxed, because the sandbox blocks the Accessibility API.
 - When a Bluetooth headset's microphone is in use (e.g. during a call), macOS switches it to a lower-quality mode for both playback and recording.
 
 ## How It Works
