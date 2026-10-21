@@ -65,9 +65,7 @@ struct MenuActionsView: View {
                         .padding(.vertical, 3)
                 }
 
-                if !conversationAwareness.isAllowed {
-                    conversationAwarenessHint
-                }
+                conversationAwarenessAccess
             }
             .plate()
 
@@ -97,29 +95,45 @@ struct MenuActionsView: View {
         }
     }
 
-    /// Offers the Accessibility access that pausing Conversation Awareness of AirPods needs.
-    /// The switches under the AirPods appear once it's granted.
-    private var conversationAwarenessHint: some View {
-        Button {
-            conversationAwareness.requestPermission()
+    /// The Accessibility access that pausing Conversation Awareness of AirPods needs. The switches
+    /// under the AirPods appear once it's granted; afterwards the row leads to where it can be revoked.
+    private var conversationAwarenessAccess: some View {
+        let isAllowed = conversationAwareness.isAllowed
+        return Button {
+            if !isAllowed {
+                conversationAwareness.requestPermission()
+            }
             NSWorkspace.shared.open(Self.accessibilitySettingsURL)
         } label: {
             HStack(spacing: MenuMetrics.iconSpacing) {
                 IconBadge(systemName: "person.wave.2")
                 VStack(alignment: .leading, spacing: 0) {
                     Text("Conversation Awareness")
-                    Text("Allow access to pause it on AirPods")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
+                    Text(
+                        isAllowed
+                            ? "Access granted"
+                            : "Allow access to pause it on AirPods"
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .contentTransition(.opacity)
                 }
                 Spacer(minLength: 0)
-                Image(systemName: "arrow.up.forward")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                if isAllowed {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(DuoColor.accent)
+                } else {
+                    Image(systemName: "arrow.up.forward")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
             }
         }
         .buttonStyle(MenuRowButtonStyle())
+        .accessibilityValue(isAllowed ? "Access granted" : "Access not granted")
+        .animation(.easeInOut(duration: 0.2), value: isAllowed)
     }
 
     /// A row that opens a pane of System Settings.
