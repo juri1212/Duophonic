@@ -86,6 +86,10 @@ open /Applications/Duophonic.app
 - Each release ships a `Duophonic.zip.sha256` file to check the download isn't corrupted with `shasum -a 256 -c Duophonic.zip.sha256`.
 - To check the download was built from this repository by its release workflow, verify its build provenance with the [GitHub CLI](https://cli.github.com) before unzipping: `gh attestation verify Duophonic.zip -R juri1212/Duophonic`. Do this especially before removing the quarantine flag, as that skips the macOS malware check for unnotarized apps.
 
+## Privacy
+
+Duophonic collects no data and makes no network connections. See the [privacy policy](PRIVACY.md).
+
 ## Uninstall
 
 To remove the app and its preferences:
@@ -138,6 +142,10 @@ brew install sox blackhole-2ch blackhole-16ch
 
 - `AudioRoutingTests` plays a test tone into a private aggregate of both BlackHole devices and asserts it arrives at each. It also checks that the tone keeps playing while the aggregate is changed in place. The suite is skipped when BlackHole isn't installed. The first run asks for microphone access (Debug builds only), which macOS requires before it records anything other than silence. The tests turn both BlackHole devices up to full volume while they measure and restore your volumes afterwards. CI runs the suite in its own job, which installs BlackHole on the runner.
 - `scripts/verify-routing.sh` checks the running app: pick both BlackHole devices in Duophonic, enable it, then run the script. Your terminal needs microphone access.
+
+### App Store listing
+
+The App Store screenshots, description and review notes live in [`appstore/`](appstore/README.md), together with the script that renders the screenshots from SwiftUI previews.
 
 ### Releasing
 

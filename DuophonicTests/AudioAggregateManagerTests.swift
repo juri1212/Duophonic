@@ -380,11 +380,18 @@ import Testing
         #expect(AudioDeviceCategory(transportType: transportType) == expected)
     }
 
-    @Test func airPodsGetDedicatedIcon() {
-        let airPods = AudioDevice(uid: "a", name: "Jane’s AirPods Max", category: .bluetooth)
-        let speaker = AudioDevice(uid: "b", name: "JBL Flip", category: .bluetooth)
-
-        #expect(airPods.iconName == "airpods.gen3")
-        #expect(speaker.iconName == AudioDeviceCategory.bluetooth.iconName)
+    @Test(arguments: [
+        ("Jane’s AirPods Max", AudioDeviceCategory.bluetooth, "airpods.max"),
+        ("Jane’s AirPods Pro", .bluetooth, "airpods.pro"),
+        ("AirPods", .bluetooth, "airpods.gen3"),
+        ("Beats Studio Pro", .bluetooth, "beats.headphones"),
+        ("Kitchen HomePod mini", .airplay, "homepod.mini.fill"),
+        ("Living Room Apple TV", .airplay, "appletv.fill"),
+        ("JBL Flip", .bluetooth, "headphones"),
+        // A name alone isn't enough: a wired adapter called "AirPods" is still USB.
+        ("AirPods Adapter", .usb, "cable.connector"),
+    ])
+    func productsGetDedicatedIcon(name: String, category: AudioDeviceCategory, expected: String) {
+        #expect(AudioDevice(uid: "a", name: name, category: category).iconName == expected)
     }
 }

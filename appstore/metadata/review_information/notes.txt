@@ -1,0 +1,11 @@
+Duophonic is a menu bar app. It has no Dock icon and no main window: after launch, click its icon (a split cable) in the menu bar to open it.
+
+How to test:
+1. Connect a second audio output to the Mac, for example wired or Bluetooth headphones, or a display with speakers. The built-in speakers count as one output.
+2. Open Duophonic from the menu bar. Click Output 1 and Output 2 to choose the two devices.
+3. Turn on the Audio Sharing switch at the top and play any audio. It plays on both outputs. Each output has its own volume slider.
+4. Turn the switch off, or quit with the Quit button. The Mac's previous output is restored.
+
+While sharing, Duophonic creates a temporary multi-output device with the public Core Audio API (AudioHardwareCreateAggregateDevice) and removes it again when sharing stops.
+
+The app needs no account and makes no network connections. It collects no data. "Open at Login" uses SMAppService and is off until the user turns it on.
