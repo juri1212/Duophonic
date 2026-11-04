@@ -1,0 +1,39 @@
+Gemeinsam hören verbindet. Duophonic spielt den Ton deines Macs auf zwei Ausgängen gleichzeitig ab. So könnt ihr zu zweit denselben Film schauen, dasselbe Album hören oder derselben Vorlesung folgen – jeder mit seinen eigenen Kopfhörern.
+
+Bei Synthesizern bedeutet duophon, zwei Töne gleichzeitig zu spielen. Duophonic für den Mac macht dasselbe mit Ton.
+
+ZWEI AUSGÄNGE, EIN SCHALTER
+Wähle zwei Ausgänge, schalte „Audio Sharing“ ein, und alles, was dein Mac abspielt, kommt aus beiden. Zwei Paar AirPods, AirPods und ein Bluetooth-Lautsprecher, Kopfhörer und die Lautsprecher deines MacBook: Zwei beliebige Ausgänge spielen zusammen.
+
+EIGENE LAUTSTÄRKE FÜR JEDEN
+Jeder Ausgang hat seinen eigenen Lautstärkeregler. So kann einer lauter drehen, ohne dass es dem anderen zu laut wird.
+
+BLEIBT SYNCHRON
+Der erste Ausgang gibt den Takt vor, der zweite wird per Drift-Korrektur daran angeglichen. So laufen die beiden nicht langsam auseinander – auch nicht während eines zweistündigen Films.
+
+WECHSELN WÄHREND DER WIEDERGABE
+Tausche jederzeit einen der Ausgänge – die Wiedergabe läuft weiter. Wählst du das Gerät des anderen Ausgangs, werden die beiden einfach getauscht.
+
+FOLGT DEINEN GERÄTEN
+Kopfhörer, die sich verbinden oder trennen, erscheinen sofort, und ein Paar, das sich wieder verbindet, spielt automatisch wieder mit.
+
+RÄUMT AUF
+Wenn du das Teilen beendest, die App schließt oder im Kontrollzentrum einen anderen Ausgang wählst, stellt Duophonic deine vorherigen Ausgänge für Ton und Hinweistöne wieder her und entfernt das Gerät mit mehreren Ausgängen, das es angelegt hat. Selbst nach einem erzwungenen Beenden räumt es beim nächsten Start auf.
+
+MERKT SICH DEIN PAAR
+Deine zwei Ausgänge sind beim nächsten Öffnen wieder bereit. Beim ersten Mal schlägt Duophonic deinen aktuellen Ausgang und ein Paar Kopfhörer vor. Mit „Open at Login“ ist es immer da.
+
+GEMACHT FÜR macOS
+Duophonic lebt in der Menüleiste, mit einem Liquid-Glass-Design, das sich wie das Kontrollzentrum anfühlt. Kein Dock-Symbol, keine Fenster.
+
+PRIVATSPHÄRE INKLUSIVE
+Kein Konto, kein Tracking, keine Werbung, kein Netzwerkzugriff. Duophonic sammelt keine Daten. Was du hörst, bleibt auf deinem Mac.
+
+GUT ZU WISSEN
+• Während des Teilens kann macOS die Lautstärke eines Geräts mit mehreren Ausgängen nicht ändern. Die Lautstärketasten und der Regler im Kontrollzentrum pausieren daher – nutze stattdessen die Regler in Duophonic.
+• Manche Geräte haben keine Software-Lautstärkeregelung. Ihr Regler ist dann nicht verfügbar, und du stellst die Lautstärke am Gerät selbst ein.
+• Wenn das Mikrofon eines Bluetooth-Headsets verwendet wird, etwa bei einem Anruf, schaltet macOS es in einen Modus mit geringerer Tonqualität.
+
+Duophonic ist Open Source. Fragen, Ideen und Fehlerberichte sind auf GitHub willkommen.
+
+Die App ist derzeit auf Englisch.

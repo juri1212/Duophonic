@@ -13,6 +13,11 @@ struct MainView: View {
     /// Only one device list is open at a time.
     @State private var expandedRole: AudioAggregateManager.Role?
 
+    /// - Parameter expandedRole: The output whose device list starts open, for previews.
+    init(expandedRole: AudioAggregateManager.Role? = nil) {
+        _expandedRole = State(initialValue: expandedRole)
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: MenuMetrics.sectionSpacing) {
             header

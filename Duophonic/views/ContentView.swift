@@ -10,9 +10,12 @@ import SwiftUI
 /// The menu bar window: a header and two plates on the window's Liquid Glass.
 /// It draws no background of its own so the window's Liquid Glass shows through.
 struct ContentView: View {
+    /// The output whose device list starts open, for previews.
+    var expandedRole: AudioAggregateManager.Role?
+
     var body: some View {
         VStack(alignment: .leading, spacing: MenuMetrics.sectionSpacing) {
-            MainView()
+            MainView(expandedRole: expandedRole)
             MenuActionsView()
         }
         .padding(MenuMetrics.windowInset)
