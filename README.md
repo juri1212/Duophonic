@@ -159,8 +159,9 @@ The same tag can also upload the app to App Store Connect, where it shows up in 
 
 1. In the [developer portal](https://developer.apple.com/account/resources), create an *Apple Distribution* and a *Mac Installer Distribution* certificate. Then create a *Mac App Store Connect* provisioning profile for `com.juri1212.Duophonic` that uses the distribution certificate.
 2. Install both certificates, select them in Keychain Access, and export them together as one `.p12`.
-3. In App Store Connect under *Users and Access → Integrations*, create a team API key with the *App Manager* role.
-4. Add these repository secrets (in addition to `APPLE_TEAM_ID`) and set the repository variable `APP_STORE_UPLOAD` to `true`:
+3. In [App Store Connect](https://appstoreconnect.apple.com/apps), create a new macOS app with the bundle ID `com.juri1212.Duophonic`. Uploads fail until this app record exists.
+4. In App Store Connect under *Users and Access → Integrations*, create a team API key with the *App Manager* role.
+5. Add these repository secrets (in addition to `APPLE_TEAM_ID`) and set the repository variable `APP_STORE_UPLOAD` to `true`:
 
 | Secret | Value |
 |---|---|
