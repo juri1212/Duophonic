@@ -5,7 +5,9 @@
 //  Created by Juri Beforth on 02.11.26.
 //
 
-#if DEBUG
+// Only with the macOS 27 SDK, whose SwiftUI is version 8: the screenshots are previews with
+// arguments, which older SDKs don't have. With Xcode 26, as on CI, this file is empty.
+#if DEBUG && canImport(SwiftUI, _version: 8.0)
     import AppKit
     import SwiftUI
 
