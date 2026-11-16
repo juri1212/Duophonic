@@ -6,6 +6,7 @@
 //
 
 #if DEBUG
+    import AppKit
     import SwiftUI
 
     // The Mac App Store screenshots, staged from the real menu bar window: each preview is one
@@ -19,7 +20,7 @@
         /// The menu bar's height on a Mac without a notch.
         static let menuBarHeight: CGFloat = 26
         /// How far the screen is zoomed in, in the screenshots of the menu bar window.
-        static let zoom: CGFloat = 1.3
+        static let zoom: CGFloat = 1.5
     }
 
     // MARK: - Sample devices
@@ -60,12 +61,62 @@
 
     // MARK: - Staging
 
-    /// A Duophonic-teal wallpaper, deeper in Dark Mode, like the system's own.
+    /// The wallpaper behind a screenshot. Each screenshot has its own, so they read as five
+    /// different pictures in the App Store's gallery, all around Duophonic's teal.
+    private enum Palette {
+        /// Teal into lilac and peach.
+        case lagoon
+        /// Blue into violet, with a teal corner.
+        case iris
+        /// Magenta into amber, with a teal corner.
+        case sunset
+        /// Deep teal, for Dark Mode.
+        case midnight
+        /// Deep violet, for Dark Mode.
+        case dusk
+
+        var colors: [Color] {
+            let values: [(Double, Double, Double)] =
+                switch self {
+                case .lagoon:
+                    [
+                        (0.05, 0.30, 0.42), (0.06, 0.46, 0.56), (0.24, 0.30, 0.62),
+                        (0.04, 0.56, 0.58), (0.20, 0.80, 0.76), (0.52, 0.50, 0.86),
+                        (0.60, 0.88, 0.80), (0.96, 0.80, 0.70), (0.90, 0.66, 0.78),
+                    ]
+                case .iris:
+                    [
+                        (0.07, 0.14, 0.42), (0.12, 0.26, 0.62), (0.30, 0.20, 0.62),
+                        (0.08, 0.36, 0.72), (0.26, 0.50, 0.92), (0.58, 0.40, 0.88),
+                        (0.24, 0.74, 0.84), (0.56, 0.68, 0.96), (0.94, 0.62, 0.82),
+                    ]
+                case .sunset:
+                    [
+                        (0.30, 0.10, 0.38), (0.56, 0.16, 0.44), (0.86, 0.32, 0.38),
+                        (0.24, 0.14, 0.50), (0.78, 0.30, 0.52), (0.98, 0.56, 0.38),
+                        (0.06, 0.42, 0.52), (0.52, 0.38, 0.70), (0.99, 0.76, 0.56),
+                    ]
+                case .midnight:
+                    [
+                        (0.02, 0.06, 0.14), (0.03, 0.16, 0.24), (0.08, 0.07, 0.22),
+                        (0.02, 0.22, 0.26), (0.03, 0.38, 0.40), (0.16, 0.10, 0.32),
+                        (0.01, 0.10, 0.14), (0.05, 0.30, 0.34), (0.10, 0.06, 0.20),
+                    ]
+                case .dusk:
+                    [
+                        (0.05, 0.04, 0.16), (0.10, 0.07, 0.26), (0.03, 0.10, 0.20),
+                        (0.12, 0.08, 0.32), (0.20, 0.14, 0.46), (0.03, 0.26, 0.32),
+                        (0.04, 0.05, 0.14), (0.10, 0.10, 0.30), (0.02, 0.20, 0.24),
+                    ]
+                }
+            return values.map { Color(red: $0.0, green: $0.1, blue: $0.2) }
+        }
+    }
+
     private struct Wallpaper: View {
-        @Environment(\.colorScheme) private var colorScheme
+        let palette: Palette
 
         var body: some View {
-            let dark = colorScheme == .dark
             MeshGradient(
                 width: 3, height: 3,
                 points: [
@@ -73,39 +124,26 @@
                     [0, 0.5], [0.42, 0.62], [1, 0.4],
                     [0, 1], [0.6, 1], [1, 1],
                 ],
-                colors: dark
-                    ? [
-                        Color(red: 0.02, green: 0.06, blue: 0.14),
-                        Color(red: 0.03, green: 0.16, blue: 0.24),
-                        Color(red: 0.08, green: 0.07, blue: 0.22),
-                        Color(red: 0.02, green: 0.22, blue: 0.26),
-                        Color(red: 0.03, green: 0.38, blue: 0.40),
-                        Color(red: 0.16, green: 0.10, blue: 0.32),
-                        Color(red: 0.01, green: 0.10, blue: 0.14),
-                        Color(red: 0.05, green: 0.30, blue: 0.34),
-                        Color(red: 0.10, green: 0.06, blue: 0.20),
-                    ]
-                    : [
-                        Color(red: 0.05, green: 0.30, blue: 0.42),
-                        Color(red: 0.06, green: 0.46, blue: 0.56),
-                        Color(red: 0.24, green: 0.30, blue: 0.62),
-                        Color(red: 0.04, green: 0.56, blue: 0.58),
-                        Color(red: 0.20, green: 0.80, blue: 0.76),
-                        Color(red: 0.52, green: 0.50, blue: 0.86),
-                        Color(red: 0.60, green: 0.88, blue: 0.80),
-                        Color(red: 0.96, green: 0.80, blue: 0.70),
-                        Color(red: 0.90, green: 0.66, blue: 0.78),
-                    ]
+                colors: palette.colors
             )
         }
+    }
+
+    /// The app in front, whose menus fill the menu bar.
+    private struct FrontApp {
+        let name: String
+        let menus: [String]
+
+        static let music = FrontApp(
+            name: "Music", menus: ["File", "Edit", "Song", "View", "Window", "Help"])
+        static let tv = FrontApp(
+            name: "TV", menus: ["File", "Edit", "View", "Controls", "Window", "Help"])
     }
 
     /// A macOS menu bar with Duophonic's icon, and its window hanging below the icon. Like the
     /// menu bar of macOS 26, it has no background of its own.
     private struct MenuBar<Window: View>: View {
-        var appName = "Music"
-        /// Whether the window is open, which highlights the icon.
-        var isWindowOpen = true
+        var app = FrontApp.music
         /// The open menu bar window.
         @ViewBuilder var window: Window
 
@@ -114,10 +152,8 @@
                 HStack(spacing: 22) {
                     Image(systemName: "apple.logo")
                         .font(.system(size: 15))
-                    Text(appName).fontWeight(.bold)
-                    ForEach(
-                        ["File", "Edit", "Song", "View", "Controls", "Window", "Help"], id: \.self
-                    ) {
+                    Text(app.name).fontWeight(.bold)
+                    ForEach(app.menus, id: \.self) {
                         Text($0)
                     }
                 }
@@ -154,6 +190,7 @@
             }
         }
 
+        /// Highlighted, as it is while its window is open.
         private var statusItem: some View {
             Image("StatusBarIcon")
                 .renderingMode(.template)
@@ -162,7 +199,7 @@
                 .frame(width: 16, height: 16)
                 .padding(.horizontal, 9)
                 .padding(.vertical, 3)
-                .background(.white.opacity(isWindowOpen ? 0.28 : 0), in: .capsule)
+                .background(.white.opacity(0.28), in: .capsule)
                 .anchorPreference(key: StatusItemBounds.self, value: .bounds) { $0 }
         }
     }
@@ -183,39 +220,189 @@
             ContentView(expandedRole: expandedRole)
                 .frame(width: MenuMetrics.windowWidth)
                 .glassEffect(.regular, in: .rect(cornerRadius: 24))
-                .shadow(color: .black.opacity(0.28), radius: 30, y: 16)
+                // A soft drop shadow, and a tight one where the window meets the desktop.
+                .shadow(color: .black.opacity(0.26), radius: 34, y: 18)
+                .shadow(color: .black.opacity(0.14), radius: 4, y: 2)
                 .environmentObject(manager)
                 .environmentObject(LaunchAtLogin())
         }
     }
 
-    /// A headline and a line of copy, in the type of Apple's own feature pages.
-    private struct Headline: View {
-        let title: LocalizedStringKey
-        let subtitle: LocalizedStringKey
+    /// The app's icon, as the Dock and the App Store show it.
+    private struct AppIcon: View {
+        let size: CGFloat
 
         var body: some View {
-            VStack(alignment: .leading, spacing: 18) {
-                Text(title)
-                    .font(.system(size: 64, weight: .bold))
-                    .tracking(-1.2)
-                    .lineSpacing(-6)
-                Text(subtitle)
-                    .font(.system(size: 24, weight: .medium))
-                    .lineSpacing(4)
-                    .foregroundStyle(.white.opacity(0.82))
+            Image(nsImage: NSApplication.shared.applicationIconImage)
+                .resizable()
+                .interpolation(.high)
+                .frame(width: size, height: size)
+        }
+    }
+
+    /// What accompanies a headline, so that no two screenshots look alike.
+    private enum HeadlineAccessory {
+        case none
+        /// The app's icon and name above the headline, for the first screenshot.
+        case lockup
+        /// A row of device glyphs below the copy.
+        case devices([String])
+        /// The glyphs of two outputs below the copy, each playing the same waveform.
+        case sync([String])
+    }
+
+    /// Text with tight tracking between its characters, but none after the last one of a line.
+    /// Negative tracking there narrows the text's bounds, which cuts into that character: the
+    /// period of a headline lost its right side.
+    ///
+    /// A function, not an initializer of `Text`: previews fail to compile a file in which an
+    /// initializer delegates to `self.init`.
+    private func trackedText(_ string: String, tracking: CGFloat) -> Text {
+        var text = AttributedString()
+        for line in string.split(separator: "\n", omittingEmptySubsequences: false) {
+            if !text.characters.isEmpty { text += AttributedString("\n") }
+            var tracked = AttributedString(String(line.dropLast()))
+            tracked.tracking = tracking
+            text += tracked + AttributedString(String(line.suffix(1)))
+        }
+        return Text(text)
+    }
+
+    /// A headline and a line of copy, in the type of Apple's own feature pages.
+    private struct Headline: View {
+        let title: String
+        let subtitle: LocalizedStringKey
+        var accessory = HeadlineAccessory.none
+
+        var body: some View {
+            VStack(alignment: .leading, spacing: 0) {
+                if case .lockup = accessory {
+                    HStack(spacing: 12) {
+                        AppIcon(size: 60)
+                        Text("Duophonic")
+                            .font(.system(size: 28, weight: .semibold))
+                            .tracking(-0.3)
+                    }
+                    // The icon has a margin of its own.
+                    .padding(.leading, -6)
+                    .padding(.bottom, 26)
+                }
+
+                VStack(alignment: .leading, spacing: 18) {
+                    trackedText(title, tracking: -1.2)
+                        .font(.system(size: 64, weight: .bold))
+                        .lineSpacing(-6)
+                    Text(subtitle)
+                        .font(.system(size: 24, weight: .medium))
+                        .lineSpacing(4)
+                        .foregroundStyle(.white.opacity(0.84))
+                }
+                .shadow(color: .black.opacity(0.18), radius: 16, y: 4)
+
+                switch accessory {
+                case .devices(let symbols):
+                    DeviceGlyphs(symbols: symbols)
+                        .padding(.top, 36)
+                case .sync(let symbols):
+                    SyncLanes(symbols: symbols)
+                        .padding(.top, 40)
+                case .none, .lockup:
+                    EmptyView()
+                }
             }
             .foregroundStyle(.white)
-            .shadow(color: .black.opacity(0.18), radius: 16, y: 4)
             .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    /// A row of glass beads, one for each kind of output.
+    private struct DeviceGlyphs: View {
+        let symbols: [String]
+
+        var body: some View {
+            GlassEffectContainer(spacing: 0) {
+                HStack(spacing: 14) {
+                    ForEach(symbols, id: \.self) { symbol in
+                        Image(systemName: symbol)
+                            .font(.system(size: 23, weight: .semibold))
+                            .frame(width: 62, height: 62)
+                            .glassEffect(.clear, in: .circle)
+                    }
+                }
+            }
+        }
+    }
+
+    /// Two outputs playing the same waveform, with one playhead across both.
+    private struct SyncLanes: View {
+        let symbols: [String]
+
+        private static let barCount = 54
+        private static let playedBars = 33
+        private static let barWidth: CGFloat = 4
+        private static let barSpacing: CGFloat = 3.5
+        private static let iconSize: CGFloat = 46
+        private static let iconSpacing: CGFloat = 18
+
+        var body: some View {
+            VStack(alignment: .leading, spacing: 16) {
+                ForEach(symbols, id: \.self) { symbol in
+                    HStack(spacing: Self.iconSpacing) {
+                        Image(systemName: symbol)
+                            .font(.system(size: 20, weight: .semibold))
+                            .frame(width: Self.iconSize, height: Self.iconSize)
+                            .background { LensBackground(shape: Circle()) }
+                        waveform
+                    }
+                }
+            }
+            .overlay(alignment: .leading) {
+                Capsule()
+                    .fill(.white)
+                    .frame(width: 2.5)
+                    .padding(.vertical, -9)
+                    .shadow(color: DuoColor.lens.opacity(0.9), radius: 8)
+                    .offset(x: playheadOffset)
+            }
+        }
+
+        private var playheadOffset: CGFloat {
+            Self.iconSize + Self.iconSpacing
+                + CGFloat(Self.playedBars) * (Self.barWidth + Self.barSpacing)
+                - Self.barSpacing / 2 - 1.25
+        }
+
+        private var waveform: some View {
+            HStack(spacing: Self.barSpacing) {
+                ForEach(0..<Self.barCount, id: \.self) { bar in
+                    Capsule()
+                        .fill(
+                            bar < Self.playedBars
+                                ? AnyShapeStyle(DuoColor.lens) : AnyShapeStyle(.white.opacity(0.3))
+                        )
+                        .frame(width: Self.barWidth, height: Self.barHeight(bar))
+                }
+            }
+            .frame(height: Self.iconSize)
+        }
+
+        /// A fixed shape that looks like music: slow swells with quicker beats on top.
+        private static func barHeight(_ bar: Int) -> CGFloat {
+            let x = Double(bar)
+            let swell = 0.55 + 0.45 * sin(x * 0.21 + 0.6)
+            let beat = 0.5 + 0.5 * sin(x * 1.37) * cos(x * 0.53 + 1.1)
+            return 6 + 38 * swell * (0.35 + 0.65 * beat)
         }
     }
 
     /// A desktop with the menu bar window open under its icon and a headline beside it.
     /// The screen is zoomed into its top-right corner, so the window reads at a glance.
     private struct DesktopShot: View {
-        let title: LocalizedStringKey
+        let title: String
         let subtitle: LocalizedStringKey
+        var accessory = HeadlineAccessory.none
+        let palette: Palette
+        var app = FrontApp.music
         let manager: AudioAggregateManager
         var expandedRole: AudioAggregateManager.Role?
         /// Less for a tall window, so it fits.
@@ -223,9 +410,9 @@
 
         var body: some View {
             ZStack(alignment: .topLeading) {
-                Wallpaper()
+                Wallpaper(palette: palette)
 
-                MenuBar {
+                MenuBar(app: app) {
                     MenuBarWindow(manager: manager, expandedRole: expandedRole)
                 }
                 .frame(
@@ -234,17 +421,52 @@
                 )
                 .scaleEffect(zoom, anchor: .topLeading)
 
-                Headline(title: title, subtitle: subtitle)
+                Headline(title: title, subtitle: subtitle, accessory: accessory)
                     .frame(width: 560, alignment: .leading)
                     .frame(maxHeight: .infinity)
                     .padding(.leading, 88)
                     .padding(.top, AppStoreShot.menuBarHeight * zoom)
             }
             .frame(width: AppStoreShot.size.width, height: AppStoreShot.size.height)
+            .clipped()
         }
     }
 
-    /// A grid of six feature cards on glass, for the last screenshot.
+    /// The menu bar window up close, running off the bottom of the picture, with a headline
+    /// beside it.
+    private struct CloseUpShot: View {
+        let title: String
+        let subtitle: LocalizedStringKey
+        let palette: Palette
+        let manager: AudioAggregateManager
+        var zoom: CGFloat = 2
+
+        var body: some View {
+            ZStack(alignment: .topLeading) {
+                Wallpaper(palette: palette)
+
+                MenuBarWindow(manager: manager)
+                    .fixedSize()
+                    .padding(.top, 58)
+                    .padding(.trailing, 36)
+                    .frame(
+                        width: AppStoreShot.size.width / zoom,
+                        height: AppStoreShot.size.height / zoom,
+                        alignment: .topTrailing
+                    )
+                    .scaleEffect(zoom, anchor: .topLeading)
+
+                Headline(title: title, subtitle: subtitle)
+                    .frame(width: 460, alignment: .leading)
+                    .frame(maxHeight: .infinity)
+                    .padding(.leading, 88)
+            }
+            .frame(width: AppStoreShot.size.width, height: AppStoreShot.size.height)
+            .clipped()
+        }
+    }
+
+    /// One of the six feature cards on glass, for the last screenshot.
     private struct FeatureCard: View {
         let symbol: String
         let title: LocalizedStringKey
@@ -335,6 +557,8 @@
             DesktopShot(
                 title: "Two listeners.\nOne Mac.",
                 subtitle: "Play your Mac’s sound on two pairs\nof headphones at once.",
+                accessory: .lockup,
+                palette: .lagoon,
                 manager: .screenshot(.alexAirPods, .samAirPods, others: [.speakers])
             )
         }
@@ -347,10 +571,15 @@
                 title: "Any two outputs.",
                 subtitle:
                     "Headphones, speakers, displays or USB.\nMix and match, and switch without\nstopping the music.",
+                accessory: .devices([
+                    "airpods.pro", "beats.headphones", "hifispeaker.2.fill", "tv",
+                    "cable.connector",
+                ]),
+                palette: .iris,
                 manager: .screenshot(
                     .alexAirPods, .speakers, others: [.samAirPods, .display, .interface]),
                 expandedRole: .secondary,
-                zoom: 1.08
+                zoom: 1.14
             )
         }
     }
@@ -362,6 +591,9 @@
                 title: "Stays in sync.",
                 subtitle:
                     "Drift correction keeps both outputs\ntogether, even through a two‑hour movie.",
+                accessory: .sync(["airpods.pro", "beats.headphones"]),
+                palette: .midnight,
+                app: .tv,
                 manager: .screenshot(.alexAirPods, .beats, others: [.speakers])
             )
         }
@@ -370,9 +602,10 @@
     @available(macOS 27, *)
     #Preview("4 Volume", arguments: ScreenshotTiles.all) { tile in
         ScreenshotTile(tile: tile, colorScheme: .light) {
-            DesktopShot(
+            CloseUpShot(
                 title: "Your volume.\nTheir volume.",
                 subtitle: "Every listener gets a slider of their\nown, right in the menu bar.",
+                palette: .sunset,
                 manager: .screenshot(
                     AudioDevice(
                         uid: "alex", name: "Alex’s AirPods Pro", category: .bluetooth,
@@ -396,19 +629,19 @@
     private struct FeaturesShot: View {
         var body: some View {
             ZStack(alignment: .top) {
-                Wallpaper()
-                MenuBar(isWindowOpen: false) { EmptyView() }
+                Wallpaper(palette: .dusk)
 
-                VStack(spacing: 44) {
+                VStack(spacing: 40) {
                     VStack(spacing: 14) {
-                        Text("Thoughtful by design.")
+                        AppIcon(size: 84)
+                            .padding(.bottom, 2)
+                        trackedText("Thoughtful by design.", tracking: -1)
                             .font(.system(size: 56, weight: .bold))
-                            .tracking(-1)
                         Text(
                             "Duophonic tidies up after itself, follows your devices and stays out of your way."
                         )
                         .font(.system(size: 22, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.82))
+                        .foregroundStyle(.white.opacity(0.84))
                     }
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
@@ -457,7 +690,6 @@
                     }
                 }
                 .frame(maxHeight: .infinity)
-                .padding(.top, AppStoreShot.menuBarHeight)
             }
             .frame(width: AppStoreShot.size.width, height: AppStoreShot.size.height)
         }

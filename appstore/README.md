@@ -24,7 +24,9 @@ swift scripts/export-app-store-screenshots.swift      # all of them
 swift scripts/export-app-store-screenshots.swift 2 3  # just some
 ```
 
-Xcode only renders previews at full resolution up to about 1500 × 975 pixels, so the script renders each screenshot as 16 tiles and stitches them together. It takes about a minute per screenshot. The first run asks you to allow the connection in Xcode.
+Xcode only renders previews at full resolution up to about 1500 × 975 pixels, so the script renders each screenshot as 16 overlapping tiles and blends them together. It takes about a minute per screenshot. The first run asks you to allow the connection in Xcode.
+
+Each screenshot has its own wallpaper and composition, so the gallery doesn't read as one picture five times: the app's icon and name on the first, a row of device glyphs on the second, two waveforms playing together on the third, a close-up of the sliders on the fourth, and the feature cards on the last.
 
 The App Store shows the first three screenshots in search results, so the most important message comes first. They're 16:10 at 2560 × 1600, one of the four sizes the Mac App Store accepts, without an alpha channel. The German listing uses the English screenshots, because the app isn't localized yet.
 
