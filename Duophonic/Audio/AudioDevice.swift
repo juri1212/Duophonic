@@ -19,11 +19,39 @@ struct AudioDevice: Identifiable, Equatable {
     var id: String { uid }
     var supportsVolume: Bool { volume != nil }
 
+    /// A glyph of the product itself where its name gives it away, like the Bluetooth menu.
     var iconName: String {
-        if category == .bluetooth && name.localizedCaseInsensitiveContains("airpods") {
-            return "airpods.gen3"
+        Self.productIcons.first { category == $0.category && $0.matches(name) }?.symbol
+            ?? category.iconName
+    }
+
+    /// Checked in order, so more specific names come first.
+    private static let productIcons: [ProductIcon] = [
+        ProductIcon(.bluetooth, ["airpods max"], "airpods.max"),
+        ProductIcon(.bluetooth, ["airpods pro"], "airpods.pro"),
+        ProductIcon(.bluetooth, ["airpods"], "airpods.gen3"),
+        ProductIcon(.bluetooth, ["powerbeats"], "beats.powerbeats.pro"),
+        ProductIcon(.bluetooth, ["studio buds", "solo buds", "beats fit"], "beats.studiobuds"),
+        ProductIcon(.bluetooth, ["beats"], "beats.headphones"),
+        ProductIcon(.airplay, ["homepod mini"], "homepod.mini.fill"),
+        ProductIcon(.airplay, ["homepod"], "homepod.fill"),
+        ProductIcon(.airplay, ["apple tv"], "appletv.fill"),
+    ]
+
+    private struct ProductIcon {
+        let category: AudioDeviceCategory
+        let keywords: [String]
+        let symbol: String
+
+        init(_ category: AudioDeviceCategory, _ keywords: [String], _ symbol: String) {
+            self.category = category
+            self.keywords = keywords
+            self.symbol = symbol
         }
-        return category.iconName
+
+        func matches(_ name: String) -> Bool {
+            keywords.contains { name.localizedCaseInsensitiveContains($0) }
+        }
     }
 }
 

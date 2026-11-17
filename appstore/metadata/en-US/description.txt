@@ -1,0 +1,37 @@
+Listening together matters. Duophonic plays your Mac’s sound on two outputs at once, so two people can watch the same movie, hear the same album or follow the same lecture, each on their own headphones.
+
+In synthesizers, duophonic means playing two notes at once. Duophonic for Mac does the same with sound.
+
+TWO OUTPUTS, ONE SWITCH
+Pick two outputs, turn on Audio Sharing, and everything your Mac plays comes out of both. Two pairs of AirPods, AirPods and a Bluetooth speaker, headphones and your MacBook’s speakers: any two outputs work together.
+
+A VOLUME FOR EACH LISTENER
+Each output has its own volume slider, so one of you can turn it up without the other being blasted.
+
+STAYS IN SYNC
+The first output sets the clock. The second is drift-corrected against it, so the two don’t slowly wander apart, even through a two-hour movie.
+
+SWITCH WHILE PLAYING
+Swap either output at any time and playback keeps going. Picking the other output’s device simply swaps the two.
+
+FOLLOWS YOUR DEVICES
+Headphones that connect or disconnect show up right away, and a pair that reconnects rejoins playback automatically.
+
+PUTS THINGS BACK
+When you stop sharing, quit, or pick another output in Control Center, Duophonic restores your previous outputs for sound and alerts and removes the multi-output device it created. Even if it was force-quit, it tidies up on the next launch.
+
+REMEMBERS YOUR PAIR
+Your two outputs are ready the next time you open Duophonic. The first time, it suggests your current output and a pair of headphones. Turn on Open at Login and it’s always there.
+
+MADE FOR macOS
+Duophonic lives in the menu bar, with a Liquid Glass design that looks and feels like Control Center. It has no Dock icon and no windows to manage.
+
+PRIVATE BY DESIGN
+No account, no tracking, no ads, no network access. Duophonic doesn’t collect any data. Your listening stays on your Mac.
+
+GOOD TO KNOW
+• While sharing, macOS can’t change the volume of a multi-output device, so the volume keys and the Control Center slider pause. Use Duophonic’s sliders instead.
+• Some devices have no software volume control. Their slider is unavailable, and you can set the volume on the device itself.
+• When a Bluetooth headset’s microphone is in use, for example during a call, macOS switches it to a lower-quality mode.
+
+Duophonic is open source. Questions, ideas and bug reports are welcome on GitHub.
