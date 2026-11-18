@@ -56,9 +56,8 @@ The App Store shows the first three screenshots in search results, so the most i
 
 ## Uploading
 
-The [Update App Store Listing](../.github/workflows/app-store-listing.yml) workflow uploads everything in this folder with [`scripts/upload-app-store-listing.sh`](../scripts/upload-app-store-listing.sh): the text of every language, the categories, the copyright, the App Review information and the screenshots. It never uploads a build and never submits for review. It runs:
+The [Update App Store Listing](../.github/workflows/app-store-listing.yml) workflow uploads everything in this folder with [`scripts/upload-app-store-listing.sh`](../scripts/upload-app-store-listing.sh): the text of every language, the categories, the copyright, the App Review information and the screenshots. It never uploads a build and never submits for review. Changes to this folder on main aren't uploaded on their own; they go out with the next release. It runs:
 
-- **when a change to `appstore/` lands on main.** It updates the version that is currently editable in App Store Connect. While none is (during review, or after release before the next version exists), it fails with "Could not find a version to edit".
 - **on a release tag**, after the build upload. It creates the version for the tag, such as 1.0.1, if it doesn't exist yet, and fills it.
 - **by hand**, under Actions → Update App Store Listing → Run workflow, optionally for a given version.
 

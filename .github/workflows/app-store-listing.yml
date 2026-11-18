@@ -3,20 +3,12 @@ name: Update App Store Listing
 # Uploads the listing in appstore/ (text, categories, App Review information and screenshots)
 # to App Store Connect. It never uploads a build and never submits for review.
 #
-# - On main, whenever appstore/ changes: updates the version that is currently editable in App
-#   Store Connect. Fails with "Could not find a version to edit" when there is none, for example
-#   while a version is in review or after it's live and before the next one is created.
+# Changes to appstore/ on main are not uploaded on their own; they go out with the next release.
+#
 # - From the release workflow, on a version tag: creates that version if needed and fills it.
 # - By hand (Actions → Update App Store Listing → Run workflow), optionally for a given version.
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'appstore/**'
-      - 'scripts/upload-app-store-listing.sh'
-      - 'Gemfile.lock'
   workflow_dispatch:
     inputs:
       version:
