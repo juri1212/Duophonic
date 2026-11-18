@@ -2,15 +2,25 @@ name: Linting
 
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 permissions:
   contents: read
 
+# A new push makes the run for the previous commit of a PR obsolete.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   swift-format:
     name: Check Swift formatting
-    runs-on: macos-26
+    # swift-format ships with the Linux toolchain, so this doesn't need one of the scarce macOS
+    # runners. Keep the Swift version in step with the one in Xcode.
+    runs-on: ubuntu-latest
+    container: swift:6.4
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -18,10 +28,4 @@ jobs:
           persist-credentials: false
 
       - name: Run swift-format lint
-        run: |
-          set -e
-          if command -v swift-format >/dev/null 2>&1; then
-            swift-format lint --strict -r .
-          else
-            swift format lint --strict -r .
-          fi
+        run: swift format lint --strict -r .

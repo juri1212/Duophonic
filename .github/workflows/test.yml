@@ -1,38 +1,36 @@
 name: Tests
 
+# macOS runners are scarce, so this runs once per change: on pull requests and on main, not on
+# every branch push, and not when only the App Store listing or the docs changed.
 on:
   push:
+    branches:
+      - main
+    paths-ignore: &non-code
+      - 'appstore/**'
+      - 'docs/**'
+      - '**/*.md'
+      - 'Gemfile'
+      - 'Gemfile.lock'
+      - 'scripts/upload-app-store-listing.sh'
+      - '.github/workflows/app-store-listing.yml'
   pull_request:
+    paths-ignore: *non-code
 
 permissions:
   contents: read
 
+# A new push makes the run for the previous commit of a PR obsolete.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
+  # The unit and the end-to-end tests share one runner and one build.
   test:
-    name: Unit tests
+    name: Unit and end-to-end tests
     runs-on: macos-26
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-
-      - name: Set up Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: 'latest'
-
-      - name: Run tests
-        run: |
-          set -o pipefail
-          xcodebuild test -scheme Duophonic -destination 'platform=macOS' \
-            -derivedDataPath DerivedData -quiet \
-            CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM=
-
-  end-to-end:
-    name: End-to-end routing tests
-    runs-on: macos-26
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -68,18 +66,35 @@ jobs:
           sqlite3 "$HOME/Library/Application Support/com.apple.TCC/TCC.db" "$grant"
           sudo sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" "$grant"
 
-      # In parallel, xcodebuild runs the suite in several app clones at once, whose tones then
-      # interfere at the shared BlackHole devices.
-      - name: Run end-to-end tests
+      - name: Build for testing
+        id: build
         run: |
           set -o pipefail
-          xcodebuild test -scheme Duophonic -destination 'platform=macOS' \
-            -only-testing:DuophonicTests/AudioRoutingTests -parallel-testing-enabled NO \
-            -derivedDataPath DerivedData -resultBundlePath e2e.xcresult -quiet \
+          xcodebuild build-for-testing -scheme Duophonic -destination 'platform=macOS' \
+            -derivedDataPath DerivedData -quiet \
             CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM=
+
+      # The routing tests run on their own below: in parallel they'd play tones into the shared
+      # BlackHole devices at the same time.
+      - name: Run unit tests
+        run: |
+          set -o pipefail
+          xcodebuild test-without-building -scheme Duophonic -destination 'platform=macOS' \
+            -skip-testing:DuophonicTests/AudioRoutingTests \
+            -derivedDataPath DerivedData -quiet
+
+      # Runs even when a unit test failed, so one run reports both.
+      - name: Run end-to-end tests
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: |
+          set -o pipefail
+          xcodebuild test-without-building -scheme Duophonic -destination 'platform=macOS' \
+            -only-testing:DuophonicTests/AudioRoutingTests -parallel-testing-enabled NO \
+            -derivedDataPath DerivedData -resultBundlePath e2e.xcresult -quiet
 
       # The suite skips itself without BlackHole, which would otherwise pass silently.
       - name: Check nothing was skipped
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: |
           summary=$(xcrun xcresulttool get test-results summary --path e2e.xcresult)
           echo "$summary"
