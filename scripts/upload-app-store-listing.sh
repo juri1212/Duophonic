@@ -15,8 +15,9 @@
 #   APP_STORE_CONNECT_API_KEY     contents of the .p8 file
 #   APP_STORE_CONNECT_KEY_ID
 #   APP_STORE_CONNECT_ISSUER_ID
-# Optional:
-#   APP_REVIEW_PHONE_NUMBER       contact phone for App Review, kept out of the public repo
+#
+# The App Review contact phone number isn't in the repo, which is public. It's set once in App
+# Store Connect, and the upload leaves it alone.
 #
 # Usage: bundle exec scripts/upload-app-store-listing.sh [version]
 
@@ -41,17 +42,11 @@ ruby -rjson -e 'File.write(ARGV[0], JSON.generate(
 # expects a hash.
 unset APP_STORE_CONNECT_API_KEY
 
-# Work on a copy, so the phone number can be added without writing it into the repo.
-cp -R "$ROOT/appstore/metadata" "$WORK/metadata"
-if [ -n "${APP_REVIEW_PHONE_NUMBER:-}" ]; then
-  printf '%s' "$APP_REVIEW_PHONE_NUMBER" > "$WORK/metadata/review_information/phone_number.txt"
-fi
-
 ARGS=(
   "api_key_path:$WORK/api_key.json"
   app_identifier:com.juri1212.Duophonic
   platform:osx
-  "metadata_path:$WORK/metadata"
+  "metadata_path:$ROOT/appstore/metadata"
   "screenshots_path:$ROOT/appstore/screenshots"
   sync_screenshots:true
   skip_binary_upload:true
