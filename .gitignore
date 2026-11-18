@@ -93,3 +93,7 @@ Secrets.xcconfig
 .package.resolved
 
 # End of .gitignore
+
+# Ruby gems installed locally for fastlane
+.bundle/
+vendor/bundle/

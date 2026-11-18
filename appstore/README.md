@@ -1,6 +1,6 @@
 # Mac App Store listing
 
-Everything the App Store product page needs, ready to paste into App Store Connect or upload with [fastlane `deliver`](https://docs.fastlane.tools/actions/deliver/), whose folder layout this follows.
+Everything the App Store product page needs. The folder follows the layout of [fastlane `deliver`](https://docs.fastlane.tools/actions/deliver/), which uploads it to App Store Connect (see [Uploading](#uploading)).
 
 ```
 appstore/
@@ -54,6 +54,26 @@ The App Store shows the first three screenshots in search results, so the most i
 - **Content rights:** no third-party content.
 - **Pricing:** your call.
 
+## Uploading
+
+The [Update App Store Listing](../.github/workflows/app-store-listing.yml) workflow uploads everything in this folder with [`scripts/upload-app-store-listing.sh`](../scripts/upload-app-store-listing.sh): the text of every language, the categories, the copyright, the App Review information and the screenshots. It never uploads a build and never submits for review. It runs:
+
+- **when a change to `appstore/` lands on main.** It updates the version that is currently editable in App Store Connect. While none is (during review, or after release before the next version exists), it fails with "Could not find a version to edit".
+- **on a release tag**, after the build upload. It creates the version for the tag, such as 1.0.1, if it doesn't exist yet, and fills it.
+- **by hand**, under Actions → Update App Store Listing → Run workflow, optionally for a given version.
+
+Screenshots are synced by checksum. Unchanged ones stay, changed ones are replaced, and ones deleted here are deleted in App Store Connect too. So this folder is the source of truth: edits made in App Store Connect are overwritten by the next upload.
+
+It uses the same opt-in (`APP_STORE_UPLOAD` variable) and the same API key secrets as the build upload. The key needs the App Manager role. To upload from your Mac instead:
+
+```bash
+bundle install
+APP_STORE_CONNECT_API_KEY="$(cat AuthKey_XXXX.p8)" APP_STORE_CONNECT_KEY_ID=XXXX \
+  APP_STORE_CONNECT_ISSUER_ID=… bundle exec scripts/upload-app-store-listing.sh [version]
+```
+
+App privacy, age rating, pricing and availability aren't part of the upload. They're set once in App Store Connect and carry over to later versions.
+
 ## Before submitting
 
 These steps need the paid Apple Developer Program membership:
@@ -61,7 +81,7 @@ These steps need the paid Apple Developer Program membership:
 1. Register the bundle ID `com.juri1212.Duophonic` and create the app record in App Store Connect (platform macOS, primary language English (U.S.)).
 2. Archive with Product → Archive and upload. The GitHub release workflow builds Developer ID builds for direct download. Those can't go to the App Store, which needs Apple Distribution signing.
 3. Test the TestFlight build on a clean Mac account: the App Store build is signed differently, so check that sharing turns on, Open at Login works, and quitting restores the output.
-4. Upload the listing: `fastlane deliver --metadata_path appstore/metadata --screenshots_path appstore/screenshots --skip_binary_upload`, or paste the text files into App Store Connect.
-5. App Review gets [`review_information/notes.txt`](metadata/review_information/notes.txt). It explains that Duophonic only lives in the menu bar, which reviewers otherwise sometimes report as "the app doesn't launch". Add a phone number in `phone_number.txt`; App Store Connect asks for one.
+4. The listing uploads by itself (see [Uploading](#uploading)). Answer the questionnaire above in App Store Connect, select the build on the version page, and submit for review.
+5. App Review gets [`review_information/notes.txt`](metadata/review_information/notes.txt). It explains that Duophonic only lives in the menu bar, which reviewers otherwise sometimes report as "the app doesn't launch". App Store Connect asks for a phone number: set it as the `APP_REVIEW_PHONE_NUMBER` repository secret, so it stays out of the public repo, or enter it in App Store Connect once.
 
 Only ship sandboxed builds: the Mac App Store requires the App Sandbox. The Conversation Awareness branch (`t3code/airpods-conversation-awareness-toggle`) removes it, so it can't be part of an App Store version.

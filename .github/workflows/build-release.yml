@@ -231,3 +231,15 @@ jobs:
             -authenticationKeyPath "$KEY_PATH" -authenticationKeyID "$APP_STORE_CONNECT_KEY_ID" \
             -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID"
           rm "$KEY_PATH"
+
+  # Creates the App Store version for this tag, if needed, and fills it with the listing from
+  # appstore/. Runs after the build upload, so a failed build leaves the listing alone.
+  app-store-listing:
+    name: Update App Store listing
+    needs: app-store
+    permissions:
+      contents: read
+    uses: ./.github/workflows/app-store-listing.yml
+    with:
+      version: ${{ github.ref_name }}
+    secrets: inherit
