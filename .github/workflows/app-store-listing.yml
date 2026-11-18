@@ -61,5 +61,4 @@ jobs:
           APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}  # .p8 contents
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          APP_REVIEW_PHONE_NUMBER: ${{ secrets.APP_REVIEW_PHONE_NUMBER }}  # optional
         run: bundle exec scripts/upload-app-store-listing.sh "$VERSION"
